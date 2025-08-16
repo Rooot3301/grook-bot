@@ -10,11 +10,17 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
   const target = interaction.options.getUser('user', true);
   if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers)) {
-    return interaction.reply({ content: `Vous n'avez pas la permission de voir les avertissements.`, ephemral: true });
+    // Réponse privée si l'utilisateur n'a pas les permissions nécessaires
+    return interaction.reply({ content: `Vous n'avez pas la permission de voir les avertissements.`, 
+      
+ephemeral: true });
   }
   const warns = getWarnsForUser(interaction.guild.id, target.id);
   if (!warns || warns.length === 0) {
-    return interaction.reply({ content: `${target.tag} n’a pas d’avertissement.`, ephemral: true });
+    // Aucune avertissement trouvé : message privé
+    return interaction.reply({ content: `${target.tag} n’a pas d’avertissement.`, 
+      
+ephemeral: true });
   }
   const embed = new EmbedBuilder()
     .setTitle(`Avertissements de ${target.tag}`)
@@ -26,5 +32,8 @@ export async function execute(interaction) {
       value: `Raison: ${w.reason}\nModérateur: <@${w.moderatorId}>\nDate: ${new Date(w.createdAt).toLocaleString()}`
     });
   });
-  await interaction.reply({ embeds: [embed], ephermal: false });
+  // Afficher les avertissements en message public par défaut
+  await interaction.reply({ embeds: [embed], 
+    
+ephemeral: false });
 }

@@ -51,7 +51,8 @@ export async function tryLazyResponse(interaction, cfg = {}) {
     'J’ai la flemme, reviens plus tard.'
   ];
   const msg = messages[Math.floor(Math.random() * messages.length)];
-  await interaction.reply({ content: msg, ephermal: true });
+  // Remarque : option "ephemeral" détermine si le message est visible uniquement par l'utilisateur déclencheur.
+  await interaction.reply({ content: msg, ephemeral: true });
   return true;
 }
 

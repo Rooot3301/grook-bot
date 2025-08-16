@@ -4,17 +4,14 @@ import { fileURLToPath } from 'url';
 import { REST, Routes } from 'discord.js';
 import { config as loadEnv } from 'dotenv';
 
-// Déploiement hors ligne des commandes slash.
-//
-// Ce script permet d'enregistrer ou de mettre à jour l'ensemble des
-// commandes slash disponibles dans le répertoire `src/commands` sans
-// démarrer le bot en entier.  Il peut être lancé via la commande
-// `npm run deploy` après avoir défini les variables d'environnement
-// `DISCORD_TOKEN` et `CLIENT_ID`.  Pour enregistrer les commandes
-// uniquement dans un serveur spécifique (mode développement), ajoutez
-// également `GUILD_ID` à votre fichier `.env` ou à votre session.
+/**
+ * Script de déploiement des commandes slash sans démarrer le bot.
+ * Utilisation:
+ *   DISCORD_TOKEN=... CLIENT_ID=... node src/deploy-commands.js
+ *   (Optionnel) GUILD_ID=... pour déployer uniquement sur un serveur de dev.
+ */
 
-// Chargement du fichier .env situé à la racine du projet
+// Localiser .env à la racine
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 loadEnv({ path: path.resolve(__dirname, '..', '.env') });
@@ -24,15 +21,15 @@ const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
 
 if (!token || !clientId) {
-  console.error('❌ Les variables DISCORD_TOKEN et CLIENT_ID doivent être définies pour déployer les commandes.');
+  console.error('❌ DISCORD_TOKEN et CLIENT_ID doivent être définis.');
   process.exit(1);
 }
 
-// Fonction utilitaire pour parcourir récursivement le dossier de commandes
+/** Récupère la liste des fichiers de commandes */
 function walkCommands(dir) {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  /** @type {string[]} */
   const files = [];
-  for (const entry of entries) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       files.push(...walkCommands(full));
@@ -43,41 +40,41 @@ function walkCommands(dir) {
   return files;
 }
 
-async function buildCommandData() {
-  const commands = [];
-  const commandsDir = path.join(__dirname, 'commands');
+async function loadAllCommands() {
+  const commandsDir = path.resolve(__dirname, 'commands');
   const files = walkCommands(commandsDir);
+  /** @type {any[]} */
+  const payload = [];
   for (const file of files) {
-    const modulePath = `file://${file}`;
-    const cmd = await import(modulePath);
-    if (cmd?.data && typeof cmd.data.toJSON === 'function') {
-      commands.push(cmd.data.toJSON());
+    // Construire l'import relatif à src
+    const relFromSrc = path.relative(path.resolve(__dirname), file).replace(/\\/g, '/');
+    const mod = await import(`./${relFromSrc}`);
+    if (!mod.data) {
+      console.warn(`(skip) ${relFromSrc} n'exporte pas 'data'.`);
+      continue;
     }
+    payload.push(mod.data.toJSON());
   }
-  return commands;
+  return payload;
 }
 
 async function deploy() {
-  const commands = await buildCommandData();
   const rest = new REST({ version: '10' }).setToken(token);
+  const commands = await loadAllCommands();
+
   try {
     if (guildId) {
-      console.log(`📦 Déploiement des ${commands.length} commandes sur le serveur ${guildId}…`);
-      await rest.put(
-        Routes.applicationGuildCommands(clientId, guildId),
-        { body: commands }
-      );
+      console.log(`📦 Déploiement de ${commands.length} commande(s) sur le serveur ${guildId}…`);
+      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
       console.log('✅ Commandes enregistrées sur le serveur.');
     } else {
-      console.log(`📦 Déploiement des ${commands.length} commandes globales…`);
-      await rest.put(
-        Routes.applicationCommands(clientId),
-        { body: commands }
-      );
+      console.log(`📦 Déploiement de ${commands.length} commande(s) globales…`);
+      await rest.put(Routes.applicationCommands(clientId), { body: commands });
       console.log('✅ Commandes globales enregistrées.');
     }
   } catch (error) {
-    console.error('❌ Une erreur est survenue lors du déploiement des commandes :', error);
+    console.error('❌ Erreur lors du déploiement :', error);
+    process.exitCode = 1;
   }
 }
 
