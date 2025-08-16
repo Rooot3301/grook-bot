@@ -3,10 +3,7 @@ import path from 'path';
 
 /**
  * Charge tous les fichiers de commandes dans src/commands et les enregistre auprès de Discord.
- * Chaque fichier de commande doit exporter un objet `data` (SlashCommandBuilder) et une fonction `execute`.
- * Les commandes sont regroupées par dossier (catégorie) pour l'affichage du /help.
- *
- * @param {import('discord.js').Client} client Client Discord
+ * Chaque fichier de commande doit exporter `data` (SlashCommandBuilder) et `execute`.
  */
 export async function loadCommands(client) {
   const commandsDir = path.join(path.resolve(), 'src', 'commands');
@@ -16,10 +13,16 @@ export async function loadCommands(client) {
   client.commands = new Map();
   client.commandCategories = new Map();
 
-  const folders = fs.readdirSync(commandsDir).filter((f) => fs.statSync(path.join(commandsDir, f)).isDirectory());
+  const folders = fs.readdirSync(commandsDir)
+    .filter((f) => fs.statSync(path.join(commandsDir, f)).isDirectory())
+    .sort((a, b) => a.localeCompare(b));
+
   for (const folder of folders) {
     const folderPath = path.join(commandsDir, folder);
-    const files = fs.readdirSync(folderPath).filter((f) => f.endsWith('.js'));
+    const files = fs.readdirSync(folderPath)
+      .filter((f) => f.endsWith('.js'))
+      .sort((a, b) => a.localeCompare(b));
+
     for (const file of files) {
       const mod = await import(`../commands/${folder}/${file}`);
       const data = mod.data;
@@ -28,18 +31,23 @@ export async function loadCommands(client) {
         console.warn(`⛔ Ignoré: ${folder}/${file} n'exporte pas { data, execute }`);
         continue;
       }
-      // Enregistrement local
       client.commands.set(data.name, { data, execute, category: folder });
       if (!client.commandCategories.has(folder)) client.commandCategories.set(folder, []);
       client.commandCategories.get(folder).push(data.name);
-      // Pour l'API
+
       commands.push(data.toJSON());
+      console.log(`[commands] loaded ${folder}/${file} -> /${data.name}`);
     }
   }
 
-  // Enregistrement auprès de l'API au démarrage
+  // rendre l'affichage /help stable
+  for (const [category, list] of client.commandCategories) {
+    client.commandCategories.set(category, list.slice().sort((a, b) => a.localeCompare(b)));
+  }
+
   client.once('ready', async () => {
     try {
+      console.log(`[commands] registering ${commands.length} command(s) globally...`);
       await client.application.commands.set(commands);
       console.log(`✔️ ${commands.length} commandes enregistrées.`);
     } catch (error) {

@@ -9,6 +9,7 @@ import { config as loadEnv } from 'dotenv';
  * Utilisation:
  *   DISCORD_TOKEN=... CLIENT_ID=... node src/deploy-commands.js
  *   (Optionnel) GUILD_ID=... pour déployer uniquement sur un serveur de dev.
+ *   (Optionnel) WIPE_BEFORE_DEPLOY=true pour vider avant de pousser.
  */
 
 // Localiser .env à la racine
@@ -19,34 +20,28 @@ loadEnv({ path: path.resolve(__dirname, '..', '.env') });
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
+const wipe = String(process.env.WIPE_BEFORE_DEPLOY || '').toLowerCase() === 'true';
 
 if (!token || !clientId) {
   console.error('❌ DISCORD_TOKEN et CLIENT_ID doivent être définis.');
   process.exit(1);
 }
 
-/** Récupère la liste des fichiers de commandes */
 function walkCommands(dir) {
-  /** @type {string[]} */
   const files = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...walkCommands(full));
-    } else if (entry.isFile() && entry.name.endsWith('.js')) {
-      files.push(full);
-    }
+    if (entry.isDirectory()) files.push(...walkCommands(full));
+    else if (entry.isFile() && entry.name.endsWith('.js')) files.push(full);
   }
   return files;
 }
 
 async function loadAllCommands() {
   const commandsDir = path.resolve(__dirname, 'commands');
-  const files = walkCommands(commandsDir);
-  /** @type {any[]} */
+  const files = walkCommands(commandsDir).sort((a, b) => a.localeCompare(b));
   const payload = [];
   for (const file of files) {
-    // Construire l'import relatif à src
     const relFromSrc = path.relative(path.resolve(__dirname), file).replace(/\\/g, '/');
     const mod = await import(`./${relFromSrc}`);
     if (!mod.data) {
@@ -61,17 +56,21 @@ async function loadAllCommands() {
 async function deploy() {
   const rest = new REST({ version: '10' }).setToken(token);
   const commands = await loadAllCommands();
+  console.log('[deploy] payload:', commands.map(c => c.name));
+
+  const route = guildId
+    ? Routes.applicationGuildCommands(clientId, guildId)
+    : Routes.applicationCommands(clientId);
+
+  console.log('[deploy] route:', guildId ? 'applicationGuildCommands' : 'applicationCommands');
 
   try {
-    if (guildId) {
-      console.log(`📦 Déploiement de ${commands.length} commande(s) sur le serveur ${guildId}…`);
-      await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
-      console.log('✅ Commandes enregistrées sur le serveur.');
-    } else {
-      console.log(`📦 Déploiement de ${commands.length} commande(s) globales…`);
-      await rest.put(Routes.applicationCommands(clientId), { body: commands });
-      console.log('✅ Commandes globales enregistrées.');
+    if (wipe) {
+      await rest.put(route, { body: [] });
+      console.log('[deploy] cleared existing commands');
     }
+    await rest.put(route, { body: commands });
+    console.log(guildId ? '✅ Commandes enregistrées sur le serveur.' : '✅ Commandes globales enregistrées.');
   } catch (error) {
     console.error('❌ Erreur lors du déploiement :', error);
     process.exitCode = 1;

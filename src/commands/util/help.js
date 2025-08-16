@@ -1,7 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
-// Commande d'aide : liste toutes les commandes disponibles par catégorie.
-// Utilise client.commandCategories rempli lors du chargement des commandes.
 export const data = new SlashCommandBuilder()
   .setName('help')
   .setDescription('Afficher la liste des commandes disponibles.');
@@ -11,9 +9,13 @@ export async function execute(interaction, client) {
     .setTitle('Aide de Grook')
     .setDescription('Liste des commandes disponibles par catégorie')
     .setColor(0x00bfff);
-  for (const [category, commands] of client.commandCategories) {
-    const list = commands.map(cmd => `• \`/${cmd}\``).join('\n');
-    embed.addFields({ name: category.charAt(0).toUpperCase() + category.slice(1), value: list });
+
+  const sortedCats = Array.from(client.commandCategories.keys()).sort((a, b) => a.localeCompare(b));
+  for (const cat of sortedCats) {
+    const commands = (client.commandCategories.get(cat) || []).slice().sort((a, b) => a.localeCompare(b));
+    const list = commands.map(cmd => `• \`/${cmd}\``).join('\\n') || '_Aucune_';
+    const title = cat.charAt(0).toUpperCase() + cat.slice(1);
+    embed.addFields({ name: title, value: list });
   }
   await interaction.reply({ embeds: [embed], ephemeral: true });
 }

@@ -3,30 +3,34 @@ import { tryLazyResponse } from '../features/easterEggs.js';
 export default {
   name: 'interactionCreate',
   async execute(interaction, client) {
-    // Commandes slash
     if (interaction.isChatInputCommand()) {
+      console.log(`[interaction] ${interaction.user.tag} -> /${interaction.commandName} in #${interaction.channel?.name} (${interaction.guild?.name})`);
       const command = client.commands.get(interaction.commandName);
-      if (!command) return;
-      // Easter egg paresseux : peut interrompre la commande
+      if (!command) {
+        console.warn(`[interaction] missing handler for /${interaction.commandName}`);
+        return;
+      }
       const lazy = await tryLazyResponse(interaction, {});
-      if (lazy) return;
+      if (lazy) {
+        console.log(`[interaction] lazy-abort /${interaction.commandName}`);
+        return;
+      }
       try {
         await command.execute(interaction, client);
+        console.log(`[interaction] OK /${interaction.commandName}`);
       } catch (error) {
-        console.error(`Erreur dans la commande ${interaction.commandName}:`, error);
+        console.error(`[interaction] FAIL /${interaction.commandName}:`, error);
         const content = '❌ Une erreur est survenue lors de l’exécution de la commande.';
         if (interaction.replied || interaction.deferred) {
-          // Répondre discrètement en cas d'erreur après une première réponse
           await interaction.followUp({ content, ephemeral: true });
         } else {
-          // Première réponse en cas d'erreur
           await interaction.reply({ content, ephemeral: true });
         }
       }
     }
-    // Gestion des interactions par bouton ou modal
-    // Les commandes de jeux peuvent définir leurs propres gestionnaires dans client.interactionHandlers
+
     if (interaction.isButton() || interaction.isModalSubmit()) {
+      console.log(`[interaction] UI ${interaction.customId} by ${interaction.user.tag}`);
       const handler = client.interactionHandlers?.get(interaction.customId);
       if (handler) {
         try {
@@ -34,6 +38,8 @@ export default {
         } catch (error) {
           console.error('Erreur dans un gestionnaire d’interface :', error);
         }
+      } else {
+        console.warn(`[interaction] no handler for ${interaction.customId}`);
       }
     }
   }
