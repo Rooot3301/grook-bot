@@ -1,5 +1,7 @@
 import { Client, GatewayIntentBits, Partials, ActivityType } from 'discord.js';
 import { config as loadEnv } from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 import { loadCommands } from './loader/commands.js';
 import { loadEvents } from './loader/events.js';
 import { startRichPresenceRotation } from './features/richPresence.js';
@@ -18,6 +20,12 @@ const client = new Client({
   ],
   partials: [Partials.Channel, Partials.Message]
 });
+// Attach version from package.json
+try {
+  const pkg = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
+  client.version = pkg.version;
+} catch (e) { console.warn('Unable to read version:', e); }
+
 
 
 // --- verbose logs injected ---

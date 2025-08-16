@@ -7,6 +7,21 @@ export default {
   async execute(message, client) {
     // Ne pas traiter les messages du bot
     if (message.author.bot) return;
+
+    // Répondre de manière humaine lorsqu'on mentionne le bot
+    try {
+      // Vérifie si le bot est mentionné dans ce message
+      if (message.mentions?.users?.has(client.user?.id)) {
+        // Journalisation de la mention pour le debug
+        console.log(`[mention] ${message.author.tag} mentionné: ${message.content}`);
+        const { getRandomMentionReply } = await import('../features/humanReplies.js');
+        const reply = getRandomMentionReply(message.author);
+        await message.reply({ content: reply });
+        // On ne retourne pas ici afin de laisser s'exécuter les analyses et easter eggs
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réponse à une mention :', error);
+    }
     const cfg = loadConfig();
     const guildCfg = cfg.guilds?.[message.guild?.id] || {};
     // Analyse VirusTotal

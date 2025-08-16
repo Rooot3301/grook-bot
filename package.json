@@ -1,6 +1,6 @@
 {
   "name": "grook-bot",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Bot Discord multifonctions : modération, mini‑jeux et easter eggs inspiré par Grook.",
   "type": "module",
   "main": "src/index.js",
