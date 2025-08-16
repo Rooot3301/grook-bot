@@ -38,6 +38,7 @@ client.interactionHandlers = new Map();
 // Charge les commandes et les événements
 await loadCommands(client);
 await loadEvents(client);
+console.log('[boot] events loaded');
 
 // Connecte le bot
 client.login(process.env.DISCORD_TOKEN);
