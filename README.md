@@ -12,6 +12,12 @@ Il combine des outils de **modération**, des **mini‑jeux** interactifs, des c
    - `VIRUSTOTAL_API_KEY` : clé API VirusTotal (facultatif, utilisée pour analyser les liens). Laisser vide pour désactiver l'analyse.
 4. Lancer le bot avec `npm start`. En développement, utilisez `npm run dev` pour un rechargement automatique.
 
+5. Pour (re)déployer les commandes slash sur Discord sans démarrer le bot, utilisez `npm run deploy`.  
+   - Ce script charge toutes les commandes depuis `src/commands` et les enregistre via l’API Discord.  
+   - Assurez‑vous d’avoir défini les variables `DISCORD_TOKEN` (token du bot) et `CLIENT_ID` (ID de l’application Discord) dans votre `.env`.  
+   - Pour un déploiement sur un serveur spécifique (idéal en phase de test), définissez également `GUILD_ID`.  
+   - Exemple : `CLIENT_ID=123... GUILD_ID=456... npm run deploy`.
+
 ## 📂 Arborescence
 
 ```
@@ -80,6 +86,7 @@ Pour égayer le serveur, quelques commandes simples :
 - `/grookfortune` : prédit l’avenir d’un membre (ou du serveur) façon cookie chinois.  
 - `/grookquote <lien_ou_id>` : cite un message de façon stylée.  
 - `/grookstats` : affiche les statistiques des mini‑jeux (victoires par membre).  
+- `/version` : affiche la version actuelle du bot (extraite de package.json).
 
 ## 🎮 Jeux interactifs
 
@@ -112,3 +119,16 @@ N’hésitez pas à proposer des améliorations ou à compléter les jeux exista
 ## 📄 Licence
 
 Ce projet est publié sous licence MIT. Vous pouvez l’utiliser et le modifier librement en respectant cette licence.
+
+## 🗂️ Versionning
+
+Le numéro de version du bot est stocké dans le fichier `package.json` (champ `version`).  
+Pour toute modification majeure ou mineure du code, pensez à incrémenter cette valeur.  
+
+Le projet propose deux outils pour gérer les versions :
+
+1. **Commande slash `/version`** — elle répond avec la version courante du bot afin que les utilisateurs puissent vérifier rapidement s’ils disposent de la dernière version déployée.
+
+2. **Script `npm run release`** — ce script utilise la commande `npm version patch` pour incrémenter automatiquement le numéro de version (ex. 1.0.0 → 1.0.1) et ajoute un message de commit standard.  
+   Lancez simplement : `npm run release` pour préparer une nouvelle release.  
+   *Remarque :* pour que le commit et le tag soient créés correctement, votre dépôt doit être initialisé avec Git et la branche doit être propre.

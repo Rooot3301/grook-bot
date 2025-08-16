@@ -6,7 +6,9 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "deploy": "node src/deploy-commands.js",
+    "release": "npm version patch -m \"chore(release): bump version to %s\""
   },
   "keywords": [
     "discord",
