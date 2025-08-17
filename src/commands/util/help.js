@@ -46,6 +46,42 @@ function permsToNames(perms) {
   return names;
 }
 
+// Limite de caractères par champ dans un embed Discord (1024)
+const MAX_FIELD_LENGTH = 1024;
+
+/**
+ * Ajoute un ou plusieurs fields dans l'embed en respectant la limite de longueur.
+ * Si la valeur dépasse 1024 caractères, elle est découpée en plusieurs fields supplémentaires.
+ *
+ * @param {EmbedBuilder} embed L'embed à enrichir
+ * @param {string} name Le nom du champ
+ * @param {string} value Le texte à insérer
+ */
+function addChunkedField(embed, name, value) {
+  if (!value) return;
+  if (value.length <= MAX_FIELD_LENGTH) {
+    embed.addFields({ name, value });
+    return;
+  }
+  const lines = value.split('\n');
+  let buffer = '';
+  let index = 0;
+  for (const line of lines) {
+    // Vérifie si l'ajout d'une ligne dépasse la limite ; si oui, on pousse le buffer actuel
+    const candidate = buffer ? `${buffer}\n${line}` : line;
+    if (candidate.length > MAX_FIELD_LENGTH) {
+      embed.addFields({ name: index === 0 ? name : `${name} (suite ${index})`, value: buffer });
+      buffer = line;
+      index++;
+    } else {
+      buffer = candidate;
+    }
+  }
+  if (buffer) {
+    embed.addFields({ name: index === 0 ? name : `${name} (suite ${index})`, value: buffer });
+  }
+}
+
 export async function execute(interaction, client) {
   const cmdName = interaction.options.getString('commande');
 
@@ -123,7 +159,9 @@ export async function execute(interaction, client) {
     }
     if (visibles.length === 0) continue;
     const title = `${cat.charAt(0).toUpperCase() + cat.slice(1)} (${visibles.length})`;
-    embed.addFields({ name: title, value: visibles.join('\n') });
+    const text = visibles.join('\n');
+    // Utilise un découpage pour ne pas dépasser 1024 caractères par field
+    addChunkedField(embed, title, text);
   }
 
   if (client.version) {
