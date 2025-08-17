@@ -63,7 +63,7 @@ Ces commandes nécessitent les permissions Discord adéquates pour fonctionner (
 - `/case remove <id>` : supprime un cas disciplinaire.  
 - `/cases` : liste tous les cas du serveur (optionnel).  
 - `/panic` : verrouille tous les salons textuels et active un slowmode global (anti‑raid).  
-- `/help` : affiche la liste des commandes disponibles par catégorie.
+*Les commandes utilitaires (help, ping, status, version, say) ont été déplacées dans une section dédiée plus bas.*
 
 Les cas et avertissements sont stockés dans des fichiers JSON (voir `src/data/`).
 
@@ -86,7 +86,17 @@ Pour égayer le serveur, quelques commandes simples :
 - `/grookfortune` : prédit l’avenir d’un membre (ou du serveur) façon cookie chinois.  
 - `/grookquote <lien_ou_id>` : cite un message de façon stylée.  
 - `/grookstats` : affiche les statistiques des mini‑jeux (victoires par membre).  
-- `/version` : affiche la version actuelle du bot (extraite de package.json).
+  
+
+## 🛠️ Commandes utilitaires
+
+Ces commandes fournissent des informations sur le bot ou permettent d’interagir avec lui d’une manière pratique.
+
+- `/help` : affiche la liste des commandes disponibles, groupées par catégorie.
+- `/ping` : mesure la latence entre Discord et le bot (API) ainsi que la latence WebSocket.
+- `/status` : affiche un résumé de l’état actuel du bot : uptime, latences, nombre de serveurs et d’utilisateurs, mémoire utilisée et version.
+- `/version` : affiche la version actuelle du bot (extraite de `package.json`).
+- `/say <message>` : envoie un message via le bot dans le salon courant. **Réservé aux administrateurs**.
 
 ## 🎮 Jeux interactifs
 
