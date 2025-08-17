@@ -1,25 +1,26 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 
-// Mesure la latence du bot et renvoie un embed avec les valeurs API et WebSocket.
-
+/**
+ * Commande de latence.
+ * Répond avec l'aller‑retour (latence API) et le ping WebSocket du bot.
+ */
 export const data = new SlashCommandBuilder()
   .setName('ping')
-  .setDescription('Mesurer la latence du bot (API et WebSocket).');
+  .setDescription('Vérifier la latence du bot et de l’API Discord.');
 
 export async function execute(interaction) {
-  // Calcul des latences
-  const apiLatency = Date.now() - interaction.createdTimestamp;
-  const wsLatency = Math.round(interaction.client.ws.ping);
-
+  // Envoie un message temporaire pour calculer la latence aller‑retour
+  const reply = await interaction.reply({ content: '🏓 Pong...', fetchReply: true, allowedMentions: { users: [] } });
+  // Latence API : différence entre le timestamp du message et celui de l'interaction
+  const roundTrip = reply.createdTimestamp - interaction.createdTimestamp;
+  // Latence WebSocket : ping actuel du client
+  const wsPing = Math.round(interaction.client.ws.ping);
   const embed = new EmbedBuilder()
-    .setTitle('🏓 Pong !')
+    .setTitle('🏓 Ping')
     .setColor(0x00bfff)
     .addFields(
-      { name: 'Latence API', value: `${apiLatency} ms`, inline: true },
-      { name: 'Latence WebSocket', value: `${wsLatency} ms`, inline: true }
+      { name: 'Latence API', value: `${roundTrip} ms`, inline: true },
+      { name: 'Latence WebSocket', value: `${wsPing} ms`, inline: true }
     );
-
-  await interaction.reply({ embeds: [embed], allowedMentions: { repliedUser: false }, ephemeral: true });
-  // Log dans la console pour diagnostics
-  console.log(`[ping] API: ${apiLatency}ms | WS: ${wsLatency}ms pour ${interaction.user.tag}`);
+  await interaction.editReply({ content: '', embeds: [embed] });
 }

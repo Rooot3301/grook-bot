@@ -1,3 +1,5 @@
 {
-  "guilds": {}
+  "guilds": {
+    "test_guild": {}
+  }
 }

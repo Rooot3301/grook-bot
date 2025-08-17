@@ -1,6 +1,8 @@
-import { handleLinkScan } from '../features/vtLinkScanner.js';
 import { tryRickroll, tryProphecy } from '../features/easterEggs.js';
-import { loadConfig, getModlogsChannel } from '../features/modlogs.js';
+import { loadConfig } from '../features/modlogs.js';
+// Import du nouvel analyseur de liens (heuristiques) et du LLM pour les mentions
+import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
+import { handleMentionLLM } from '../features/llmChat.js';
 
 export default {
   name: 'messageCreate',
@@ -8,32 +10,34 @@ export default {
     // Ne pas traiter les messages du bot
     if (message.author.bot) return;
 
-    // Répondre de manière humaine lorsqu'on mentionne le bot
+    // 1) Analyse heuristique des liens (LinkGuardianLite)
     try {
-      // Vérifie si le bot est mentionné dans ce message
+      await analyzeLinksInMessage(message);
+    } catch (err) {
+      console.error('[linkGuardianLite] erreur :', err);
+    }
+
+    // 2) Répondre de manière conversationnelle lorsque le bot est mentionné
+    try {
       if (message.mentions?.users?.has(client.user?.id)) {
-        // Journalisation de la mention pour le debug
         console.log(`[mention] ${message.author.tag} mentionné: ${message.content}`);
-        const { getRandomMentionReply } = await import('../features/humanReplies.js');
-        const reply = getRandomMentionReply(message.author);
-        await message.reply({ content: reply });
-        // On ne retourne pas ici afin de laisser s'exécuter les analyses et easter eggs
+        // Tente une réponse LLM (si activé) — renvoie true si le message est géré
+        const handled = await handleMentionLLM(message, client);
+        if (!handled) {
+          // Sinon, réponse aléatoire « humaine » en fallback
+          const { getRandomMentionReply } = await import('../features/humanReplies.js');
+          const reply = getRandomMentionReply(message.author);
+          await message.reply({ content: reply });
+        }
+        // Après avoir répondu à la mention, on laisse les easter eggs se déclencher (pas de return)
       }
     } catch (error) {
-      console.error('Erreur lors de la réponse à une mention :', error);
+      console.error('Erreur lors du traitement de la mention :', error);
     }
+
+    // Récupérer la configuration pour d'éventuels easter eggs
     const cfg = loadConfig();
     const guildCfg = cfg.guilds?.[message.guild?.id] || {};
-    // Analyse VirusTotal
-    const modlogsChannel = guildCfg.modlogs ? message.guild.channels.cache.get(guildCfg.modlogs) : null;
-    await handleLinkScan(message, {
-      features: { vtScanner: true },
-      vtScanner: {
-        cooldownChannelSec: 5,
-        cacheTtlSec: 21600,
-        logToModlogs: true
-      }
-    }, modlogsChannel);
     // Easter eggs : Rickroll et prophéties
     await tryRickroll(message, {});
     await tryProphecy(message, {});

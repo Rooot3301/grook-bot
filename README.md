@@ -90,13 +90,14 @@ Pour égayer le serveur, quelques commandes simples :
 
 ## 🛠️ Commandes utilitaires
 
-Ces commandes fournissent des informations sur le bot ou permettent d’interagir avec lui d’une manière pratique.
+ Ces commandes fournissent des informations sur le bot ou permettent d’interagir avec lui de manière pratique ou administrative.
 
-- `/help` : affiche la liste des commandes disponibles, groupées par catégorie.
-- `/ping` : mesure la latence entre Discord et le bot (API) ainsi que la latence WebSocket.
-- `/status` : affiche un résumé de l’état actuel du bot : uptime, latences, nombre de serveurs et d’utilisateurs, mémoire utilisée et version.
-- `/version` : affiche la version actuelle du bot (extraite de `package.json`).
-- `/say <message>` : envoie un message via le bot dans le salon courant. **Réservé aux administrateurs**.
+ - `/help` : liste toutes les commandes disponibles en fonction de vos permissions et les regroupe par catégorie. Ajoutez un nom de commande (ex. `/help commande:ban`) pour obtenir une aide détaillée (description, options, permissions requises et commandes associées).
+ - `/ping` : mesure la latence aller‑retour (API) et le ping WebSocket, et affiche les résultats dans un embed lisible.
+ - `/status` : affiche un résumé de l’état actuel du bot : uptime, latences, nombre de serveurs et d’utilisateurs, mémoire utilisée et version.
+ - `/version` : renvoie la version actuelle du bot (lue dans `package.json`).
+ - `/config` : permet aux administrateurs de consulter et de modifier les paramètres du serveur (prefixe, easter eggs, messages de bienvenue…). Utilisez `/config list` pour voir tous les paramètres, `/config get clé:<clé>` pour récupérer une valeur et `/config set clé:<clé> valeur:<valeur>` pour la définir.
+ - `/say <message>` : envoie un message via le bot dans le salon courant. **Réservé aux administrateurs**.
 
 ## 🎮 Jeux interactifs
 
@@ -117,9 +118,37 @@ Avec `/liar`, l’hôte saisit trois affirmations (deux vraies, une fausse). Les
 
 > **Remarque :** certaines implémentations de jeux complexes nécessitent des interactions avancées (boutons, modals). Ce dépôt fournit un squelette de base ; vous pouvez enrichir les jeux selon vos besoins.
 
-## 🔍 Analyse des liens (VirusTotal)
+## 🔍 Analyse des liens (LinkGuardianLite)
 
-Lorsqu’un utilisateur poste un lien, Grook tente de l’analyser via l’API VirusTotal (si la clé API est fournie). Il indique si le lien est sain, suspect ou dangereux. Les scans sont mis en cache pour respecter les quotas. La configuration permet d’activer/désactiver cette fonctionnalité et de personnaliser son comportement.
+Grook peut analyser les liens postés sans recourir à l’API VirusTotal. Le module **LinkGuardianLite** calcule un score de risque en fonction de critères simples (extensions de domaine suspectes, punycode, nombre de sous‑domaines, raccourcisseurs, mots‑clés de phishing…) et, en option, effectue une requête **HEAD** rapide pour inspecter le type de contenu.
+
+- Si `LINK_GUARDIAN_ENABLED` est activé et que le score atteint ou dépasse `LINK_RISK_THRESHOLD` (par défaut 3), le bot envoie un avertissement dans le salon ou en message privé selon `LINK_REPLY_MODE` (`reply`, `dm` ou `silent`).
+- `LINK_HEAD_CHECK=true` active l’inspection HEAD (timeout 2 s) pour mieux évaluer les fichiers binaires ou les redirections.
+
+Aucun appel à un service externe n’est effectué ; la configuration se fait dans les variables d’environnement.
+
+## 🤖 Conversations LLM (optionnel)
+
+Grook peut désormais discuter grâce à un LLM local via [Ollama](https://ollama.com/). Lorsque vous mentionnez le bot (`@Grook`), il génère une réponse naturelle en français à l’aide d’un modèle hébergé en local. Pour activer cette fonctionnalité :
+
+1. **Installez et démarrez Ollama** : suivez les instructions d’[installation](https://ollama.com/download) puis lancez `ollama serve` sur la machine qui héberge le bot.
+2. **Téléchargez un modèle** prenant en charge le français, par exemple :
+
+   ```bash
+   ollama pull llama3.1:8b
+   # ou un modèle plus léger : ollama pull phi4
+   ```
+
+3. **Configurez votre `.env`** (voir `.env.example`) avec les variables suivantes :
+
+   - `LLM_ON_MENTION=true` : active la réponse via LLM lorsque le bot est mentionné.
+   - `OLLAMA_HOST=http://127.0.0.1:11434` : adresse de votre instance Ollama.
+   - `OLLAMA_MODEL=llama3.1:8b` : nom du modèle à utiliser (modifiez selon votre choix).
+   - `LLM_MAX_TOKENS` et `LLM_TEMPERATURE` : ajustez la longueur et la créativité des réponses (optionnel).
+
+4. **Redémarrez le bot**. Lorsqu’un utilisateur mentionne Grook, il répondra via le LLM ; s’il n’y parvient pas, il retombera sur une réponse aléatoire « humaine ».
+
+Cette fonctionnalité est entièrement optionnelle et n’envoie aucune donnée à des services externes (Ollama fonctionne en local).
 
 ## 📌 Contribuer
 
