@@ -27,6 +27,13 @@ export async function execute(interaction) {
   if (!interaction.member.permissions.has(PermissionFlagsBits.ManageNicknames)) {
     return interaction.reply({ content: `Vous n'avez pas la permission de modifier les pseudos.`, ephemeral: true });
   }
+  const me = interaction.guild.members.me;
+  if (!me.permissions.has(PermissionFlagsBits.ManageNicknames)) {
+    return interaction.reply({ content: `Je n'ai pas la permission de modifier les pseudos.`, ephemeral: true });
+  }
+  if (!member.manageable) {
+    return interaction.reply({ content: `Je ne peux pas modifier le pseudo de ${target}.`, ephemeral: true });
+  }
   try {
     await member.setNickname(newNick);
     await interaction.reply({ content: `${target} a maintenant pour pseudo : **${newNick}**`, allowedMentions: { users: [] } });
