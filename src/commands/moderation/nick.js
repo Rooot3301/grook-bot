@@ -1,4 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { createCase } from '../../features/cases.js';
+import { logCase } from '../../features/modlogs.js';
 
 /**
  * Modifie le pseudo d'un membre sur le serveur. Cette commande est utile pour
@@ -15,11 +17,16 @@ export const data = new SlashCommandBuilder()
   .addStringOption(o => o
     .setName('pseudo')
     .setDescription('Nouveau pseudo')
-    .setRequired(true));
+    .setRequired(true))
+  .addStringOption(o => o
+    .setName('reason')
+    .setDescription('Raison du changement de pseudo')
+    .setRequired(false));
 
 export async function execute(interaction) {
   const target = interaction.options.getUser('user', true);
   const newNick = interaction.options.getString('pseudo', true);
+  const reason = interaction.options.getString('reason') || 'Aucune raison';
   const member = interaction.guild.members.cache.get(target.id);
   if (!member) {
     return interaction.reply({ content: `Je ne trouve pas cet utilisateur sur ce serveur.`, ephemeral: true });
@@ -28,7 +35,9 @@ export async function execute(interaction) {
     return interaction.reply({ content: `Vous n'avez pas la permission de modifier les pseudos.`, ephemeral: true });
   }
   try {
-    await member.setNickname(newNick);
+    await member.setNickname(newNick, reason);
+    const caseData = createCase(interaction.guild.id, target.id, 'NICK', reason, interaction.user.id, null, { nickname: newNick });
+    await logCase(interaction.client, interaction.guild, caseData);
     await interaction.reply({ content: `${target} a maintenant pour pseudo : **${newNick}**`, allowedMentions: { users: [] } });
   } catch (error) {
     console.error(error);
