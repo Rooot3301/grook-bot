@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { createCase } from '../../features/cases.js';
 import { logCase } from '../../features/modlogs.js';
+import { canModerate } from '../../utils/permissions.js';
 
 export const data = new SlashCommandBuilder()
   .setName('ban')
@@ -18,6 +19,10 @@ export async function execute(interaction) {
   }
   if (!interaction.member.permissions.has(PermissionFlagsBits.BanMembers)) {
     return interaction.reply({ content: `Vous n'avez pas la permission de bannir.`, ephemeral: true });
+  }
+  // Vérifier que le bot peut bannir cette personne (rôle supérieur et pas propriétaire)
+  if (!canModerate(member)) {
+    return interaction.reply({ content: `Je ne peux pas bannir cette personne (rôle trop élevé ou propriétaire).`, ephemeral: true });
   }
   try {
     await member.ban({ reason });

@@ -2,6 +2,7 @@ import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { parseDuration } from '../../utils/time.js';
 import { createCase } from '../../features/cases.js';
 import { logCase } from '../../features/modlogs.js';
+import { canModerate } from '../../utils/permissions.js';
 
 export const data = new SlashCommandBuilder()
   .setName('mute')
@@ -25,6 +26,10 @@ export async function execute(interaction) {
   }
   if (!interaction.member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
     return interaction.reply({ content: `Vous n'avez pas la permission de mute.`, ephemeral: true });
+  }
+  // Vérifier que le bot peut mute cette personne (rôle supérieur et pas propriétaire)
+  if (!canModerate(member)) {
+    return interaction.reply({ content: `Je ne peux pas mute cette personne (rôle trop élevé ou propriétaire).`, ephemeral: true });
   }
   try {
     await member.timeout(ms, reason);

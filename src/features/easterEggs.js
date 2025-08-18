@@ -1,11 +1,20 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 
 // Configuration par défaut des easter eggs
+// Les chances ont été réduites pour éviter un flood excessif dans les salons.
+// - Rickroll : passe de 0,5 % à 0,1 %
+// - Lazy : passe de 4 % à 1 %
+// - Prophétie : passe de 0,1 % à 0,03 %
+// - Cooldown des prophéties prolongé de 6 h à 8 h
 const defaultConfig = {
-  rickrollChance: 0.005, // 0,5 % des messages
-  lazyChance: 0.04,      // 4 % des commandes
-  prophecyChance: 0.001, // 0,1 % des messages
-  prophecyCooldownMs: 1000 * 60 * 60 * 6 // 6 heures entre deux prophéties
+  // Probabilité qu’un Rickroll s’active sur un message (0,1 %)
+  rickrollChance: 0.001,
+  // Probabilité qu’une commande soit refusée paresseusement (1 %)
+  lazyChance: 0.01,
+  // Probabilité d’envoyer une prophétie mystérieuse (0,03 %)
+  prophecyChance: 0.0003,
+  // Intervalle minimal entre deux prophéties dans un même serveur (8 h)
+  prophecyCooldownMs: 1000 * 60 * 60 * 8
 };
 
 // Suivi du dernier envoi de prophétie par serveur
