@@ -1,19 +1,12 @@
-import { SlashCommandBuilder } from 'discord.js';
-import { withGuard } from '../../utils/commandGuard.js';
-import { readJSON, writeJSON } from '../../utils/jsonStore.js';
-const FILE = 'src/data/config.json';
-export const data = new SlashCommandBuilder()
-  .setName('config')
-  .setDescription('Configurer Grook pour cette guilde')
-  .addStringOption(o => o.setName('key').setDescription('ex: LINK_RISK_THRESHOLD').setRequired(true))
-  .addStringOption(o => o.setName('value').setDescription('valeur').setRequired(true));
-async function run(interaction) {
-  const key = interaction.options.getString('key', true);
-  const value = interaction.options.getString('value', true);
-  const cfg = await readJSON(FILE, { guilds: {} });
-  cfg.guilds[interaction.guildId] ||= {};
-  cfg.guilds[interaction.guildId][key] = value;
-  await writeJSON(FILE, cfg);
-  return interaction.editReply(`✅ \`${key}\` = \`${value}\``);
+// Redirect the admin config command to the existing util config implementation.
+// This file ensures that the command exports both `data` and an `execute` function
+// to satisfy the test suite and avoid duplicate command definitions.
+import { data as utilData, execute as utilExecute } from '../util/config.js';
+
+// Re-export the command definition. Discord.js requires a `data` property.
+export const data = utilData;
+
+// Wrap the util `execute` function so that it satisfies the expected signature.
+export async function execute(interaction, client) {
+  return utilExecute(interaction, client);
 }
-export const execute = withGuard(run, { perms: ['ManageGuild'], ephemeralByDefault: true });

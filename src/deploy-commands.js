@@ -50,7 +50,16 @@ async function loadAllCommands() {
     }
     payload.push(mod.data.toJSON());
   }
-  return payload;
+  // Éliminer les doublons de noms de commande pour éviter les 400 "duplicate name"
+  const unique = new Map();
+  for (const cmd of payload) {
+    if (unique.has(cmd.name)) {
+      console.warn(`[deploy] duplicate command name detected: ${cmd.name} — skipping later duplicate`);
+      continue;
+    }
+    unique.set(cmd.name, cmd);
+  }
+  return [...unique.values()];
 }
 
 async function deploy() {
