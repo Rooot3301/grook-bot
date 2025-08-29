@@ -1,0 +1,3 @@
+import { ContextMenuCommandBuilder, ApplicationCommandType } from 'discord.js'; import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
+export const data=new ContextMenuCommandBuilder().setName('Analyser le lien').setType(ApplicationCommandType.Message);
+export async function execute(interaction,client){ const msg=await interaction.channel.messages.fetch(interaction.targetId); await interaction.deferReply({ephemeral:true}); const res=await analyzeLinksInMessage(msg); return interaction.editReply(res?'🔎 Analyse effectuée.':'✅ Rien à signaler.'); }

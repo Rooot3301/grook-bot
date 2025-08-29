@@ -1,0 +1,3 @@
+import { ContextMenuCommandBuilder, ApplicationCommandType, EmbedBuilder } from 'discord.js'; import { Colors } from '../utils/theme.js';
+export const data=new ContextMenuCommandBuilder().setName('Voir profil').setType(ApplicationCommandType.User);
+export async function execute(interaction){ const user=await interaction.guild.members.fetch(interaction.targetId); const emb=new EmbedBuilder().setColor(Colors.info).setTitle(`Profil: ${user.user.tag}`).setDescription(`ID: ${user.id}\nCréé: ${user.user.createdAt.toLocaleString()}`); return interaction.reply({embeds:[emb],ephemeral:true}); }

@@ -1,0 +1,1 @@
+import express from 'express'; export function startHealthServer({port=3001,client}){const app=express(); app.get('/health',(req,res)=>{const ok=!!client?.user; res.json({ok,user:client?.user?.tag||null,uptime:process.uptime()});}); const srv=app.listen(port,()=>console.log('[health] listening on',port)); return srv;}

@@ -1,0 +1,2 @@
+export function stripMassMentions(text){return text?.replace(/@everyone/gi,'@\u200beveryone').replace(/@here/gi,'@\u200bhere').replace(/<@&\d+>/g,'<@\u200b&role>')}
+export function clampLength(text,max=1800){if(!text)return text;return text.length<=max?text:text.slice(0,max)+'…'}

@@ -1,0 +1,1 @@
+export const Colors={success:0x57F287,error:0xED4245,info:0x5865F2,warn:0xFEE75C,neutral:0x2B2D31};
