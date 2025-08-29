@@ -1,32 +1,37 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { createWarn } from '../../features/warns.js';
-import { createCase } from '../../features/cases.js';
-import { logCase } from '../../features/modlogs.js';
-
+import { SlashCommandBuilder } from 'discord.js';
+import { withGuard } from '../../utils/commandGuard.js';
+import { readJSON, writeJSON } from '../../utils/jsonStore.js';
+const FILE = 'src/data/warns.json';
 export const data = new SlashCommandBuilder()
   .setName('warn')
-  .setDescription('Donne un avertissement à un membre.')
-  .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
-  .addUserOption(o => o.setName('user').setDescription('Utilisateur à avertir').setRequired(true))
-  .addStringOption(o => o.setName('reason').setDescription('Raison de l’avertissement').setRequired(false));
-
-export async function execute(interaction) {
-  const target = interaction.options.getUser('user', true);
-  const reason = interaction.options.getString('reason') || 'Aucune raison';
-  const member = interaction.guild.members.cache.get(target.id);
-  if (!member) {
-    return interaction.reply({ content: `Je ne trouve pas cet utilisateur.`, ephemeral: true });
+  .setDescription('Gérer les avertissements')
+  .addSubcommand(s => s.setName('add')
+    .setDescription('Avertir un membre')
+    .addUserOption(o => o.setName('user').setDescription('Membre').setRequired(true))
+    .addStringOption(o => o.setName('reason').setDescription('Raison').setRequired(true)))
+  .addSubcommand(s => s.setName('list')
+    .setDescription('Lister les avertissements')
+    .addUserOption(o => o.setName('user').setDescription('Membre')));
+async function run(interaction) {
+  const sub = interaction.options.getSubcommand(true);
+  const guildId = interaction.guildId;
+  if (sub === 'add') {
+    const user = interaction.options.getUser('user', true);
+    const reason = interaction.options.getString('reason', true);
+    const db = await readJSON(FILE, {});
+    db[guildId] ||= {};
+    db[guildId][user.id] ||= [];
+    db[guildId][user.id].push({ reason, by: interaction.user.id, at: Date.now() });
+    await writeJSON(FILE, db);
+    return interaction.editReply(`✅ Averti **${user.tag}** : *${reason}*`);
   }
-  if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers)) {
-    return interaction.reply({ content: `Vous n'avez pas la permission de warn.`, ephemeral: true });
-  }
-  try {
-    createWarn(interaction.guild.id, target.id, reason, interaction.user.id);
-    const caseData = createCase(interaction.guild.id, target.id, 'WARN', reason, interaction.user.id);
-    await logCase(interaction.client, interaction.guild, caseData);
-    await interaction.reply({ content: `${target.tag} a reçu un avertissement.`, allowedMentions: { users: [] } });
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({ content: `Impossible d’avertir ${target.tag}.`, ephemeral: true });
+  if (sub === 'list') {
+    const user = interaction.options.getUser('user');
+    const db = await readJSON(FILE, {});
+    const entries = user ? (db[guildId]?.[user.id] || []) : [];
+    if (entries.length === 0) return interaction.editReply('Aucun avertissement.');
+    const lines = entries.slice(0, 10).map((e, i) => `#${i+1} ${user.tag} — ${e.reason} (${new Date(e.at).toLocaleString()})`);
+    return interaction.editReply(lines.join('\n'));
   }
 }
+export const execute = withGuard(run, { perms: ['ModerateMembers'], ephemeralByDefault: true, cooldownMs: 1500 });
