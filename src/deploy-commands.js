@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { REST, Routes } from 'discord.js';
 import { config as loadEnv } from 'dotenv';
+import { notifyEmbed } from './utils/notifier.js';
+import { Colors } from './utils/theme.js';
 
 /**
  * Script de déploiement des commandes slash sans démarrer le bot.
@@ -79,9 +81,28 @@ async function deploy() {
       console.log('[deploy] cleared existing commands');
     }
     await rest.put(route, { body: commands });
-    console.log(guildId ? '✅ Commandes enregistrées sur le serveur.' : '✅ Commandes globales enregistrées.');
+    const successMsg = guildId
+      ? '✅ Commandes enregistrées sur le serveur.'
+      : '✅ Commandes globales enregistrées.';
+    console.log(successMsg);
+    // Notification de succès
+    notifyEmbed({
+      title: 'Déploiement des commandes',
+      description: successMsg,
+      color: Colors.success,
+      fields: [
+        { name: 'Nombre de commandes', value: String(commands.length), inline: true },
+        { name: 'Portée', value: guildId ? 'Serveur' : 'Global', inline: true },
+      ],
+    }).catch(() => {});
   } catch (error) {
     console.error('❌ Erreur lors du déploiement :', error);
+    // Notification d'échec
+    notifyEmbed({
+      title: 'Échec du déploiement des commandes',
+      description: error?.message || String(error),
+      color: Colors.error,
+    }).catch(() => {});
     process.exitCode = 1;
   }
 }

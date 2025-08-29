@@ -5,6 +5,8 @@ import path from 'path';
 import { loadCommands } from './loader/commands.js';
 import { loadEvents } from './loader/events.js';
 import { startRichPresenceRotation } from './features/richPresence.js';
+import { notifyEmbed } from './utils/notifier.js';
+import { Colors } from './utils/theme.js';
 
 // Charge les variables d'environnement depuis .env
 loadEnv();
@@ -56,4 +58,29 @@ client.once('ready', () => {
   console.log(`🤖 ${client.user.tag} est connecté et prêt.`);
   console.log(`[ready] ID: ${client.user.id}`);
   startRichPresenceRotation(client);
+  // Notification de démarrage via webhook
+  notifyEmbed({
+    title: 'Bot démarré',
+    description: `La version v${client.version || 'N/A'} est en ligne et prête à servir.`,
+    color: Colors.success,
+  }).catch(() => {});
+});
+
+// Reporter les erreurs critiques via webhook
+client.on('error', (err) => {
+  notifyEmbed({
+    title: 'Erreur critique',
+    description: err?.message || String(err),
+    color: Colors.error,
+  }).catch(() => {});
+});
+
+// Reporter les rejets non attrapés
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+  notifyEmbed({
+    title: 'Rejet non attrapé',
+    description: String(reason),
+    color: Colors.error,
+  }).catch(() => {});
 });

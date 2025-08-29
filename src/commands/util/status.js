@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { Colors } from '../../utils/theme.js';
 
 // Cette commande fournit un résumé de l'état du bot : uptime, latences, serveurs, utilisateurs, mémoire et version.
 
@@ -42,7 +43,7 @@ export async function execute(interaction, client) {
 
     const embed = new EmbedBuilder()
       .setTitle('Statut de Grook')
-      .setColor(0x00bfff)
+      .setColor(Colors.info)
       .addFields(
         { name: 'Uptime', value: uptime, inline: true },
         { name: 'Latence API', value: `${apiLatency} ms`, inline: true },

@@ -3,6 +3,19 @@
 Bot Discord multifonctions inspiré par l'univers de **Grook**.  
 Il combine des outils de **modération**, des **mini‑jeux** interactifs, des commandes "fun" et des **easter eggs** pour rendre votre serveur vivant et sécurisé.
 
+## 🆕 Nouveautés de la version 2.0.0
+
+La version 2 de Grook introduit plusieurs améliorations majeures axées sur la stabilité et l’ergonomie :
+
+- **Direction artistique harmonisée** : toutes les commandes utilisent désormais une palette de couleurs cohérente via un helper d’embed (`utils/embed.js`). Les embeds s’adaptent automatiquement (succès, erreur, info, avertissement) pour une lecture claire.
+- **Notifications via webhook** : un webhook Discord configurable (`WEBHOOK_URL`) prévient lorsqu’une mise à jour est déployée, que le bot démarre ou qu’une erreur critique se produit. Pour désactiver ces notifications en développement, définissez `SKIP_WEBHOOK=true`.
+- **Déploiement des slash commands amélioré** : le script `npm run deploy` élimine les doublons et envoie un rapport de succès/échec via le webhook. Un indicateur `WIPE_BEFORE_DEPLOY=true` supprime les commandes avant un nouveau déploiement.
+- **Gestion de configuration asynchrone** : la commande `/config` s’appuie sur un service (`services/configService.js`) pour lire/écrire les paramètres de manière atomique et non bloquante. Les réponses utilisent les nouveaux embeds.
+- **Log d’audit et ratelimit interne** : les actions sensibles sont journalisées dans `logs/audit.log` et un système de jetons limite le spam de commandes par utilisateur.
+- **Bump de version** : le projet passe en `2.0.0` (voir `package.json`). Le numéro de version est exposé via `/version` et repris dans les notifications de démarrage.
+
+Ces nouveautés visent à rendre Grook prêt pour un déploiement en production stable et élégant. Consultez la suite du README pour la liste complète des commandes et des fonctionnalités.
+
 ## 🔧 Installation et lancement
 
 1. **Cloner** ce dépôt ou créer un nouveau dossier et y copier les fichiers.
@@ -10,6 +23,8 @@ Il combine des outils de **modération**, des **mini‑jeux** interactifs, des c
 3. Copier le fichier `.env.example` en `.env` et remplir les variables :
    - `DISCORD_TOKEN` : le token de votre bot (obtenu dans le [Discord Developer Portal](https://discord.com/developers/applications)).
    - `VIRUSTOTAL_API_KEY` : clé API VirusTotal (facultatif, utilisée pour analyser les liens). Laisser vide pour désactiver l'analyse.
+   - `WEBHOOK_URL` : (optionnel) l’URL du webhook Discord qui recevra les notifications de démarrage, déploiement et erreur. Si vide, un webhook interne est utilisé.
+   - `SKIP_WEBHOOK` : (optionnel) mettre `true` pour désactiver l’envoi de notifications (utile en développement).
 4. Lancer le bot avec `npm start`. En développement, utilisez `npm run dev` pour un rechargement automatique.
 
 5. Pour (re)déployer les commandes slash sur Discord sans démarrer le bot, utilisez `npm run deploy`.  

@@ -1,4 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { Colors } from '../../utils/theme.js';
 
 /**
  * Commande de latence.
@@ -17,7 +18,7 @@ export async function execute(interaction) {
   const wsPing = Math.round(interaction.client.ws.ping);
   const embed = new EmbedBuilder()
     .setTitle('🏓 Ping')
-    .setColor(0x00bfff)
+    .setColor(Colors.info)
     .addFields(
       { name: 'Latence API', value: `${roundTrip} ms`, inline: true },
       { name: 'Latence WebSocket', value: `${wsPing} ms`, inline: true }

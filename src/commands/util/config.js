@@ -1,5 +1,6 @@
-import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import { loadConfig, saveConfig } from '../../features/modlogs.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { getGuildConfig, setGuildKey } from '../../services/configService.js';
+import { infoEmbed, successEmbed } from '../../utils/embed.js';
 
 /**
  * Commande de gestion de la configuration par serveur.
@@ -34,32 +35,35 @@ export async function execute(interaction) {
   if (!guildId) {
     return interaction.reply({ content: 'Cette commande ne peut être utilisée qu’en serveur.', ephemeral: true });
   }
-  const cfg = loadConfig();
-  if (!cfg.guilds) cfg.guilds = {};
-  if (!cfg.guilds[guildId]) cfg.guilds[guildId] = {};
-  const guildCfg = cfg.guilds[guildId];
+  const guildCfg = await getGuildConfig(guildId);
   if (sub === 'get') {
     const key = interaction.options.getString('clé', true);
     const value = guildCfg[key];
     if (value === undefined) {
       return interaction.reply({ content: `⚙️ Le paramètre \`${key}\` n’est pas configuré.`, ephemeral: true });
     }
-    return interaction.reply({ content: `⚙️ **${key}** = \`${value}\``, ephemeral: true });
+    // Utiliser un embed d'information pour afficher la valeur
+    const embed = infoEmbed({
+      title: 'Paramètre',
+      fields: [
+        { name: 'Clé', value: key, inline: true },
+        { name: 'Valeur', value: String(value), inline: true },
+      ],
+    });
+    return interaction.reply({ embeds: [embed], ephemeral: true });
   } else if (sub === 'set') {
     const key = interaction.options.getString('clé', true);
     const value = interaction.options.getString('valeur', true);
-    guildCfg[key] = value;
-    saveConfig(cfg);
-    return interaction.reply({ content: `✅ Paramètre \`${key}\` défini sur \`${value}\``, ephemeral: true });
+    await setGuildKey(guildId, key, value);
+    const embed = successEmbed({ title: 'Paramètre mis à jour', description: `\`${key}\` = \`${value}\`` });
+    return interaction.reply({ embeds: [embed], ephemeral: true });
   } else if (sub === 'list') {
     const entries = Object.entries(guildCfg);
     if (entries.length === 0) {
       return interaction.reply({ content: 'Aucun paramètre n’est configuré pour ce serveur.', ephemeral: true });
     }
-    const embed = new EmbedBuilder()
-      .setTitle('Configuration du serveur')
-      .setColor(0x00bfff)
-      .setDescription(entries.map(([k, v]) => `• **${k}** = \`${v}\``).join('\n'));
+    const lines = entries.map(([k, v]) => `• **${k}** = \`${v}\``).join('\n');
+    const embed = infoEmbed({ title: 'Configuration du serveur', description: lines });
     return interaction.reply({ embeds: [embed], ephemeral: true });
   }
 }
