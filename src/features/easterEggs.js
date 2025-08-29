@@ -1,112 +1,89 @@
-import { EmbedBuilder } from 'discord.js';
-// Default config (sobre)
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+
+// Configuration par défaut des easter eggs
 const defaultConfig = {
-  rickrollChance: 0.0005,   // 0.05 %
-  lazyChance: 0.005,        // 0.5 %
-  prophecyChance: 0.0002,   // 0.02 %
-  prophecyCooldownMs: 1000 * 60 * 60 * 6,
-  rickrollCooldownMs: 1000 * 60 * 60, // 60 min / guilde
-  lazyUserCooldownMs: 1000 * 60 * 30, // 30 min / user
-  perGuildMaxPerHour: 2,
-  perGuildMaxPerDay: 8,
-  channelBlacklist: [],
-  roleWhitelist: [],
+  rickrollChance: 0.005, // 0,5 % des messages
+  lazyChance: 0.04,      // 4 % des commandes
+  prophecyChance: 0.001, // 0,1 % des messages
+  prophecyCooldownMs: 1000 * 60 * 60 * 6 // 6 heures entre deux prophéties
 };
+
+// Suivi du dernier envoi de prophétie par serveur
 const lastProphecyTimes = new Map();
-const lastRickrollTimes = new Map();
-const lastLazyUserTimes = new Map();
-const hourlyCounters = new Map();
-const dailyCounters = new Map();
-function nowHourKey() { const d = new Date(); return `${d.getUTCFullYear()}${d.getUTCMonth()}${d.getUTCDate()}${d.getUTCHours()}`; }
-function nowDayKey()  { const d = new Date(); return `${d.getUTCFullYear()}${d.getUTCMonth()}${d.getUTCDate()}`; }
-function incCounters(guildId) {
-  const hKey = nowHourKey(), dKey = nowDayKey();
-  const h = hourlyCounters.get(guildId) || { hourKey: hKey, count: 0 };
-  const d = dailyCounters.get(guildId)  || { dayKey: dKey, count: 0 };
-  if (h.hourKey !== hKey) { h.hourKey = hKey; h.count = 0; }
-  if (d.dayKey !== dKey)  { d.dayKey  = dKey; d.count = 0; }
-  h.count++; d.count++;
-  hourlyCounters.set(guildId, h);
-  dailyCounters.set(guildId, d);
-}
-function underCaps(guildId, cfg) {
-  const hKey = nowHourKey(), dKey = nowDayKey();
-  const h = hourlyCounters.get(guildId);
-  const d = dailyCounters.get(guildId);
-  const hc = (!h || h.hourKey !== hKey) ? 0 : h.count;
-  const dc = (!d || d.dayKey  !== dKey)  ? 0 : d.count;
-  return hc < (cfg.perGuildMaxPerHour ?? 2) && dc < (cfg.perGuildMaxPerDay ?? 8);
-}
-function allowedInChannel(message, cfg) {
-  if (!message?.guild) return false;
-  if (cfg.channelBlacklist?.length && cfg.channelBlacklist.includes(message.channelId)) return false;
-  if (cfg.roleWhitelist?.length) {
-    const member = message.member;
-    if (!member?.roles?.cache?.some(r => cfg.roleWhitelist.includes(r.id))) return false;
+
+/**
+ * Vérifie et envoie un easter egg Rickroll aléatoire sur un message.
+ * @param {import('discord.js').Message} message
+ * @param {Object} cfg Configuration des easter eggs
+ */
+export async function tryRickroll(message, cfg = {}) {
+  const chance = cfg.rickrollChance ?? defaultConfig.rickrollChance;
+  if (Math.random() >= chance) return false;
+  // Crée un bouton menant vers la vidéo
+  const link = 'https://youtu.be/xvFZjo5PgG0?si=V5vVoWMNqiVBHczB';
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setLabel('Récompense 🎁')
+      .setStyle(ButtonStyle.Link)
+      .setURL(link)
+  );
+  const altResponses = ['Non, pas aujourd\'hui 😏'];
+  const useAlt = Math.random() < 0.1;
+  if (useAlt) {
+    await message.reply({ content: altResponses[0] });
+  } else {
+    await message.reply({ content: 'GG, voilà ta récompense 🎁', components: [row] });
   }
-  return underCaps(message.guild.id, cfg);
+  return true;
 }
-function getGuildConfig(/* guildId */) { return { ...defaultConfig }; }
-// Rickroll
-export async function tryRickroll(message) {
-  if (!message?.guild || message.author.bot) return false;
-  const cfg = getGuildConfig(message.guild.id);
-  if (!allowedInChannel(message, cfg)) return false;
-  const last = lastRickrollTimes.get(message.guild.id) || 0;
-  if (Date.now() - last < (cfg.rickrollCooldownMs ?? 3600000)) return false;
-  if (Math.random() < (cfg.rickrollChance ?? 0)) {
-    incCounters(message.guild.id);
-    lastRickrollTimes.set(message.guild.id, Date.now());
-    await message.channel.send('https://youtu.be/dQw4w9WgXcQ');
-    return true;
-  }
-  return false;
+
+/**
+ * Répond parfois paresseusement à une commande slash. Retourne vrai si la commande ne doit pas s’exécuter.
+ * @param {import('discord.js').ChatInputCommandInteraction} interaction
+ * @param {Object} cfg
+ */
+export async function tryLazyResponse(interaction, cfg = {}) {
+  const chance = cfg.lazyChance ?? defaultConfig.lazyChance;
+  if (Math.random() >= chance) return false;
+  const messages = [
+    '😴 Laisse‑moi dormir zebi…',
+    'Demande à Google frère.',
+    'J’ai la flemme, reviens plus tard.'
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
+  // Remarque : option "ephemeral" détermine si le message est visible uniquement par l'utilisateur déclencheur.
+  await interaction.reply({ content: msg, ephemeral: true });
+  return true;
 }
-// Lazy
-export async function tryLazyResponse(interaction) {
-  if (!interaction?.inGuild?.() || interaction.user?.bot) return false;
-  const cfg = getGuildConfig(interaction.guildId);
-  const key = `${interaction.guildId}:${interaction.user.id}`;
-  const last = lastLazyUserTimes.get(key) || 0;
-  if (Date.now() - last < (cfg.lazyUserCooldownMs ?? 1800000)) return false;
-  if (!underCaps(interaction.guildId, cfg)) return false;
-  if (Math.random() < (cfg.lazyChance ?? 0)) {
-    incCounters(interaction.guildId);
-    lastLazyUserTimes.set(key, Date.now());
-    await interaction.editReply('🦥 *…hmm… plus tard peut-être.*');
-    return true;
-  }
-  return false;
-}
-// Prophecy
-export async function tryProphecy(message) {
-  if (!message?.guild || message.author.bot) return false;
-  const cfg = getGuildConfig(message.guild.id);
-  if (!allowedInChannel(message, cfg)) return false;
-  const guildId = message.guild.id;
-  const last = lastProphecyTimes.get(guildId) || 0;
-  if (Date.now() - last < (cfg.prophecyCooldownMs ?? 21600000)) return false;
-  if (Math.random() < (cfg.prophecyChance ?? 0)) {
-    incCounters(guildId);
-    const props = [
-      '🔮 Une prophétie tombera au bon moment.',
-      '🌕 Quand la lune sera haute, Grook dansera.',
-      '🧿 Un ancien message deviendra pertinent.',
-      '🌀 Tu éviteras le spam sans le savoir.',
-      '⚡ Bientôt, un membre sera modéré par son propre mute.',
-      '📜 La prophétie annonce la fin… mais pas aujourd’hui.',
-      '👁️ Le serveur survivra tant que personne ne prononcera mon nom trois fois.'
-    ];
-    const content = props[Math.floor(Math.random() * props.length)];
-    const embed = new EmbedBuilder()
-      .setTitle('Prophétie de Grook')
-      .setDescription(content)
-      .setColor(0x8800ff)
-      .setFooter({ text: 'Les étoiles sont capricieuses' })
-      .setTimestamp();
-    await message.channel.send({ embeds: [embed] });
-    lastProphecyTimes.set(guildId, Date.now());
-    return true;
-  }
-  return false;
+
+/**
+ * Envoie une prophétie mystérieuse occasionnelle dans un salon.
+ * @param {import('discord.js').Message} message
+ * @param {Object} cfg
+ */
+export async function tryProphecy(message, cfg = {}) {
+  const chance = cfg.prophecyChance ?? defaultConfig.prophecyChance;
+  const cooldown = cfg.prophecyCooldownMs ?? defaultConfig.prophecyCooldownMs;
+  const guildId = message.guild?.id;
+  if (!guildId) return false;
+  const lastTime = lastProphecyTimes.get(guildId) || 0;
+  if (Date.now() - lastTime < cooldown) return false;
+  if (Math.random() >= chance) return false;
+  // Liste de prophéties absurdes
+  const props = [
+    '🌑 Quand le centième message tombera, un modérateur trébuchera.',
+    '⚡ Bientôt, un membre sera modéré par son propre mute.',
+    '📜 La prophétie annonce la fin… mais pas aujourd’hui.',
+    '👁️ Le serveur survivra tant que personne ne prononcera mon nom trois fois.'
+  ];
+  const content = props[Math.floor(Math.random() * props.length)];
+  const embed = new EmbedBuilder()
+    .setTitle('Prophétie de Grook')
+    .setDescription(content)
+    .setColor(0x8800ff)
+    .setFooter({ text: 'Les étoiles sont capricieuses' })
+    .setTimestamp();
+  await message.channel.send({ embeds: [embed] });
+  lastProphecyTimes.set(guildId, Date.now());
+  return true;
 }

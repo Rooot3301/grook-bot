@@ -3,8 +3,6 @@ import { loadConfig } from '../features/modlogs.js';
 // Import du nouvel analyseur de liens (heuristiques) et du LLM pour les mentions
 import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
 import { handleMentionLLM } from '../features/llmChat.js';
-// Fallback conversationnel basique sans API
-import { getSimpleReply } from '../features/simpleChat.js';
 
 export default {
   name: 'messageCreate',
@@ -26,19 +24,10 @@ export default {
         // Tente une réponse LLM (si activé) — renvoie true si le message est géré
         const handled = await handleMentionLLM(message, client);
         if (!handled) {
-          // Contenu sans la mention du bot (pour analyse simple)
-          const mentionRegex = new RegExp(`<@!?${client.user?.id}>`, 'g');
-          const cleanedContent = message.content.replace(mentionRegex, '').trim();
-          // Essayez d'obtenir une réponse simple basée sur des règles
-          const simpleReply = getSimpleReply(cleanedContent);
-          if (simpleReply) {
-            await message.reply({ content: simpleReply });
-          } else {
-            // Sinon, réponse aléatoire « humaine » en dernier ressort
-            const { getRandomMentionReply } = await import('../features/humanReplies.js');
-            const reply = getRandomMentionReply(message.author);
-            await message.reply({ content: reply });
-          }
+          // Sinon, réponse aléatoire « humaine » en fallback
+          const { getRandomMentionReply } = await import('../features/humanReplies.js');
+          const reply = getRandomMentionReply(message.author);
+          await message.reply({ content: reply });
         }
         // Après avoir répondu à la mention, on laisse les easter eggs se déclencher (pas de return)
       }

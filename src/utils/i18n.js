@@ -1,1 +1,20 @@
-export function localizeCommand(b,{fr,en}){ if(fr?.name)b.setNameLocalizations({'fr':fr.name,'fr-FR':fr.name}); if(fr?.description)b.setDescriptionLocalizations({'fr':fr.description,'fr-FR':fr.description}); if(en?.name)b.setNameLocalizations({...b.name_localizations,'en-US':en.name,'en-GB':en.name}); if(en?.description)b.setDescriptionLocalizations({...b.description_localizations,'en-US':en.description,'en-GB':en.description}); return b;}
+export function localizeCommand(b, { fr, en }) {
+  // Applique uniquement les locales supportées par Discord.js. Les locales
+  // comme 'fr-FR' ou 'en-GB' ne sont pas acceptées et provoquent des erreurs.
+  if (fr?.name) {
+    b.setNameLocalizations({ fr: fr.name });
+  }
+  if (fr?.description) {
+    b.setDescriptionLocalizations({ fr: fr.description });
+  }
+  if (en?.name) {
+    // Concaténer avec d'éventuelles locales déjà définies
+    const existing = b.name_localizations || {};
+    b.setNameLocalizations({ ...existing, 'en-US': en.name });
+  }
+  if (en?.description) {
+    const existing = b.description_localizations || {};
+    b.setDescriptionLocalizations({ ...existing, 'en-US': en.description });
+  }
+  return b;
+}

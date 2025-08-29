@@ -1,7 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { createCase } from '../../features/cases.js';
 import { logCase } from '../../features/modlogs.js';
-import { canModerate } from '../../utils/permissions.js';
 
 export const data = new SlashCommandBuilder()
   .setName('kick')
@@ -19,10 +18,6 @@ export async function execute(interaction) {
   }
   if (!interaction.member.permissions.has(PermissionFlagsBits.KickMembers)) {
     return interaction.reply({ content: `Vous n'avez pas la permission d’expulser.`, ephemeral: true });
-  }
-  // Vérifier que le bot peut expulser cette personne (rôle supérieur et pas propriétaire)
-  if (!canModerate(member)) {
-    return interaction.reply({ content: `Je ne peux pas expulser cette personne (rôle trop élevé ou propriétaire).`, ephemeral: true });
   }
   try {
     await member.kick(reason);

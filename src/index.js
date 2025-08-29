@@ -9,9 +9,6 @@ import { startRichPresenceRotation } from './features/richPresence.js';
 // Charge les variables d'environnement depuis .env
 loadEnv();
 
-// Déterminer si le mode debug est activé (DEBUG=true dans .env)
-const DEBUG = String(process.env.DEBUG || '').toLowerCase() === 'true';
-
 // Crée une nouvelle instance du client Discord avec les intents nécessaires
 const client = new Client({
   intents: [
@@ -31,24 +28,18 @@ try {
 
 
 
-// --- gestion des logs ---
-// En mode debug, activer des journaux détaillés (debug, warn, rateLimit, boot info).
-if (DEBUG) {
-  client.on('debug', (m) => console.log('[djs:debug]', m));
-  client.on('warn', (m) => console.warn('[djs:warn]', m));
-  client.on('error', (e) => console.error('[djs:error]', e));
-  if (client.rest?.on) {
-    client.rest.on('rateLimited', (info) => {
-      console.warn('[REST:rateLimited]', { route: info.route, timeoutMs: info.timeToReset, limit: info.limit });
-    });
-  }
-  console.log('[boot] intents:', Array.from(client.options.intents || []));
-  console.log('[boot] partials:', client.options.partials);
-} else {
-  // Toujours journaliser les erreurs critiques
-  client.on('error', (e) => console.error('[djs:error]', e));
+// --- verbose logs injected ---
+client.on('debug', (m) => console.log('[djs:debug]', m));
+client.on('warn', (m) => console.warn('[djs:warn]', m));
+client.on('error', (e) => console.error('[djs:error]', e));
+if (client.rest?.on) {
+  client.rest.on('rateLimited', (info) => {
+    console.warn('[REST:rateLimited]', { route: info.route, timeoutMs: info.timeToReset, limit: info.limit });
+  });
 }
-// --- fin gestion des logs ---
+console.log('[boot] intents:', Array.from(client.options.intents || []));
+console.log('[boot] partials:', client.options.partials);
+// --- end verbose logs injected ---
 // Initialiser une map pour les gestionnaires d’interactions (boutons, modals, etc.)
 client.interactionHandlers = new Map();
 
