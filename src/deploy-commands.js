@@ -1,18 +1,10 @@
+// Hotfix deploy script with duplicate-name guard and legacy filter
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { REST, Routes } from 'discord.js';
 import { config as loadEnv } from 'dotenv';
 
-/**
- * Script de déploiement des commandes slash sans démarrer le bot.
- * Utilisation:
- *   DISCORD_TOKEN=... CLIENT_ID=... node src/deploy-commands.js
- *   (Optionnel) GUILD_ID=... pour déployer uniquement sur un serveur de dev.
- *   (Optionnel) WIPE_BEFORE_DEPLOY=true pour vider avant de pousser.
- */
-
-// Localiser .env à la racine
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 loadEnv({ path: path.resolve(__dirname, '..', '.env') });
@@ -20,61 +12,67 @@ loadEnv({ path: path.resolve(__dirname, '..', '.env') });
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
-const wipe = String(process.env.WIPE_BEFORE_DEPLOY || '').toLowerCase() === 'true';
+const wipe = String(process.env.WIPE_BEFORE_DEPLOY || 'false').toLowerCase() === 'true';
 
 if (!token || !clientId) {
-  console.error('❌ DISCORD_TOKEN et CLIENT_ID doivent être définis.');
+  console.error('❌ DISCORD_TOKEN et/ou CLIENT_ID manquants. Vérifie ton .env');
   process.exit(1);
 }
 
-function walkCommands(dir) {
-  const files = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...walkCommands(full));
-    else if (entry.isFile() && entry.name.endsWith('.js')) files.push(full);
-  }
-  return files;
-}
-
-async function loadAllCommands() {
-  const commandsDir = path.resolve(__dirname, 'commands');
-  const files = walkCommands(commandsDir).sort((a, b) => a.localeCompare(b));
-  const payload = [];
-  for (const file of files) {
-    const relFromSrc = path.relative(path.resolve(__dirname), file).replace(/\\/g, '/');
-    const mod = await import(`./${relFromSrc}`);
-    if (!mod.data) {
-      console.warn(`(skip) ${relFromSrc} n'exporte pas 'data'.`);
-      continue;
+const commandsDir = path.join(path.resolve(), 'src', 'commands');
+const all = [];
+async function walk(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const e of entries) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) await walk(p);
+    else if (e.isFile() && e.name.endsWith('.js')) {
+      try {
+        const mod = await import(pathToFileURL(p));
+        const data = mod?.data?.toJSON?.() ?? mod?.data;
+        const execute = mod?.execute;
+        if (data?.name && typeof execute === 'function') all.push({ name: data.name, data });
+      } catch (err) {
+        console.warn('[deploy] Ignored file (load error):', p, err?.message);
+      }
     }
-    payload.push(mod.data.toJSON());
   }
-  return payload;
 }
+await walk(commandsDir);
 
+// HOTFIX region
+const LEGACY_BLOCKLIST = new Set(['config']); // we now ship /settings instead
+const unique = new Map();
+for (const c of all) {
+  if (LEGACY_BLOCKLIST.has(c.name)) {
+    console.warn(`[deploy] filtered legacy command: ${c.name}`);
+    continue;
+  }
+  if (unique.has(c.name)) {
+    console.warn(`[deploy] duplicate command detected: ${c.name} — keeping the first, skipping the rest`);
+    continue;
+  }
+  unique.set(c.name, c.data);
+}
+const payload = Array.from(unique.entries()).map(([k, v]) => v);
+console.log('[deploy] payload:', Array.from(unique.keys()));
+
+const rest = new REST({ version: '10' }).setToken(token);
 async function deploy() {
-  const rest = new REST({ version: '10' }).setToken(token);
-  const commands = await loadAllCommands();
-  console.log('[deploy] payload:', commands.map(c => c.name));
-
   const route = guildId
     ? Routes.applicationGuildCommands(clientId, guildId)
     : Routes.applicationCommands(clientId);
-
   console.log('[deploy] route:', guildId ? 'applicationGuildCommands' : 'applicationCommands');
-
   try {
     if (wipe) {
       await rest.put(route, { body: [] });
       console.log('[deploy] cleared existing commands');
     }
-    await rest.put(route, { body: commands });
+    await rest.put(route, { body: payload });
     console.log(guildId ? '✅ Commandes enregistrées sur le serveur.' : '✅ Commandes globales enregistrées.');
   } catch (error) {
     console.error('❌ Erreur lors du déploiement :', error);
     process.exitCode = 1;
   }
 }
-
 deploy();
