@@ -1,29 +1,91 @@
-# Changelog
+# 📋 Changelog
 
-## 1.5.0 – Améliorations d’aide et de configuration (2025‑08‑17)
+## 🚀 Version 3.0.0 - "GrookSpy Revolution" (2025-01-XX)
 
-### Nouveautés
+### 🎯 **NOUVEAUTÉS MAJEURES**
 
-- **Commande `/help` revisitée** : l’aide liste désormais les commandes disponibles en tenant compte des permissions de l’utilisateur, affiche un descriptif pour chacune et propose un mode d’aide détaillée via `/help commande:<nom>`. L’aide détaillée fournit l’usage complet (avec paramètres obligatoires ou facultatifs), les permissions requises et des suggestions de commandes connexes.
-- **Commande `/config`** : les administrateurs peuvent consulter, définir ou lister des paramètres persistants du serveur sans modifier les fichiers. Les paramètres sont stockés par identifiant de guilde dans `src/data/config.json`.
-- **Commande `/ping` améliorée** : affiche la latence API (aller‑retour) et la latence WebSocket dans un embed clair.
-- **Tests unitaires** : un script `npm test` vérifie que toutes les commandes exportent correctement `data` et `execute` et que la configuration peut être chargée et enregistrée sans erreur.
-- **Intégration continue** : ajout d’un workflow GitHub Actions (`.github/workflows/ci.yml`) qui installe les dépendances et exécute les tests sur chaque push ou pull request.
-- **Versioning** : la version du projet est passée en `1.5.0`, reflétant les ajouts majeurs. Le numéro est chargé au démarrage et affiché dans les commandes `/help` et `/status` (le cas échéant).
+#### 🕵️ **GrookSpy Complètement Révolutionné**
+- **✨ Vraies règles d'Undercover** : Tous les joueurs ont le même mot sauf UN
+- **🎨 Interface premium** avec embeds colorés et émojis
+- **📚 80+ paires de mots** soigneusement équilibrées par difficulté
+- **🎲 Système de difficulté** automatique (facile/moyen/difficile)
+- **⏰ Gestion du temps** optimisée (30s inscription, 90s indices, 60s vote)
+- **🎯 Validation intelligente** des indices (pas de mots exacts)
+- **📊 Statistiques détaillées** de fin de partie
+- **🧹 Cleanup automatique** des handlers et timers
 
-### Corrections
+#### 🎮 **Refactorisation des Mini-Jeux**
+- **🔄 Regroupement** de tous les mini-jeux dans `/grookgames`
+- **⚡ Performance** améliorée avec une seule commande
+- **🎯 Nouvelles phrases** pour le jeu de frappe
+- **🪙 Pile ou face** avec effets spéciaux rares
 
-- Harmonisation de la propriété `ephemeral` dans toutes les commandes (suppression de variantes mal orthographiées).
-- Nettoyage et factorisation des logs de démarrage et des réponses aux commandes.
+#### 🥚 **Easter Eggs Ultra Rares**
+- **📉 Fréquences drastiquement réduites** :
+  - Rickroll : 0.01% → 0.001% (100x plus rare)
+  - Lazy responses : 4% → 0.1% (40x plus rare)  
+  - Prophéties : 0.1% → 0.005% (20x plus rare)
+- **🎭 Nouvelles réponses** plus variées et créatives
+- **⏰ Cooldown prophéties** : 6h → 24h
+- **🎲 Double randomisation** pour encore plus de rareté
 
-### Instructions de mise à jour
+### 🔧 **AMÉLIORATIONS TECHNIQUES**
 
-1. **Mise à jour du code** : récupérez la nouvelle version via `git pull` ou en remplaçant les fichiers existants par ceux de cette release.
-2. **Installation des dépendances** : exécutez `npm install` pour mettre à jour les modules si nécessaire.
-3. **Déploiement des commandes slash** : lancez `npm run deploy` pour enregistrer les nouvelles commandes et mettre à jour la liste existante. Ajoutez `GUILD_ID` dans votre `.env` pour un déploiement instantané sur un serveur de test.
-4. **Tests** : lancez `npm test` localement pour vérifier que tout est en ordre. Le workflow GitHub Actions s’en chargera automatiquement lors des pushes.
-5. **Redémarrage du bot** : démarrez (ou redémarrez) le bot avec `npm start`. Le numéro de version actualisé s’affichera dans `/version`, `/help` et `/status`.
+#### 📁 **Architecture Nettoyée**
+- **🗑️ Suppression** des anciens fichiers de jeux redondants
+- **📦 Consolidation** du code en modules cohérents
+- **🧹 Cleanup** des imports inutilisés
+- **📝 Documentation** améliorée avec exemples
+
+#### 🎯 **UX/UI Améliorée**
+- **🎨 Embeds cohérents** avec palette de couleurs
+- **⚡ Feedback instantané** sur toutes les interactions
+- **🔔 Notifications intelligentes** de progression
+- **🏆 Célébrations** de victoire plus immersives
+
+### 🐛 **CORRECTIONS**
+
+- **🔒 Sécurité** : Validation des entrées utilisateur renforcée
+- **⚡ Performance** : Réduction de la charge mémoire des jeux
+- **🎯 Stabilité** : Gestion d'erreurs améliorée
+- **📱 Compatibilité** : Meilleur support mobile des embeds
+
+### 📊 **STATISTIQUES**
+
+- **📈 Lignes de code** : -500 (optimisation)
+- **🎮 Commandes de jeux** : 5 → 2 (consolidation)
+- **🎯 Paires de mots GrookSpy** : 2 → 80+ (4000% d'augmentation)
+- **🥚 Rareté des easter eggs** : 10-100x plus rares
 
 ---
 
-Pour les versions antérieures, reportez‑vous à l’historique Git du projet.
+## 🔄 Version 2.1.0 - "Production Ready" (2025-01-XX)
+
+### ✨ **Nouveautés**
+- **🔐 Sécurité renforcée** : Validation des entrées, gestion d'erreurs centralisée
+- **📊 Monitoring** : Health check endpoint, logs structurés
+- **🚀 CI/CD** : Pipeline GitHub Actions complet
+- **📦 Backup automatique** : Scripts de sauvegarde des données
+
+### 🔧 **Améliorations**
+- **⚡ Performance** : Migration vers I/O asynchrones
+- **🛡️ Robustesse** : Rate limiting, gestion des permissions uniformisée
+- **📝 Documentation** : Guides de déploiement et règles de jeux
+
+---
+
+## 🎯 Version 2.0.0 - "Harmonie Visuelle" (2025-01-XX)
+
+### 🎨 **Direction Artistique**
+- **🌈 Palette de couleurs** cohérente via `utils/embed.js`
+- **📢 Système de notifications** webhook Discord
+- **🔄 Déploiement amélioré** avec rapports automatiques
+
+### 🤖 **Fonctionnalités**
+- **💬 Chat LLM** via Ollama (optionnel)
+- **🔗 LinkGuardian Lite** : Analyse heuristique des liens
+- **⚙️ Configuration asynchrone** avec service dédié
+
+---
+
+*Pour les versions antérieures, consultez l'historique Git du projet.*

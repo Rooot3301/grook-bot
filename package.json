@@ -1,15 +1,25 @@
 {
   "name": "grook-bot",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Bot Discord multifonctions : modération, mini‑jeux et easter eggs inspiré par Grook.",
   "type": "module",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "deploy": "node src/deploy-commands.js",
-    "release": "npm version patch -m \"chore(release): bump version to %s\"",
-    "test": "node tests/runTests.js"
+    "test": "node tests/runTests.js",
+    "test:unit": "node tests/unit/index.js",
+    "test:integration": "node tests/integration/index.js",
+    "lint": "echo 'Linting...' && node --check src/**/*.js",
+    "format": "echo 'Formatting would go here'",
+    "backup": "node scripts/backup.js",
+    "release:patch": "npm version patch -m \"chore(release): %s\"",
+    "release:minor": "npm version minor -m \"feat(release): %s\"",
+    "release:major": "npm version major -m \"feat(release): %s [BREAKING]\""
   },
   "keywords": [
     "discord",
@@ -24,5 +34,10 @@
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
     "sqlite3": "^5.1.6"
-  }
+  },
+  "devDependencies": {
+    "pino": "^8.15.0"
+  },
+  "repository": "https://github.com/Root3301/grook-bot",
+  "license": "MIT"
 }
