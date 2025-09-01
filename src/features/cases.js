@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { readJSON, writeJSON } from '../utils/jsonStore.js';
 
 // Chemin vers le fichier JSON stockant les cas disciplinaires
 const casesFile = path.join(path.resolve(), 'src', 'data', 'cases.json');
@@ -8,24 +9,16 @@ const casesFile = path.join(path.resolve(), 'src', 'data', 'cases.json');
  * Charge les cas depuis le fichier JSON. Initialise le fichier s'il n'existe pas.
  * @returns {Object<string, Array>} Cas par identifiant de serveur
  */
-function loadCases() {
-  if (!fs.existsSync(casesFile)) {
-    fs.writeFileSync(casesFile, JSON.stringify({}), 'utf8');
-  }
-  try {
-    const data = JSON.parse(fs.readFileSync(casesFile, 'utf8'));
-    return data;
-  } catch {
-    return {};
-  }
+async function loadCases() {
+  return await readJSON(casesFile, {});
 }
 
 /**
  * Sauvegarde les cas dans le fichier JSON.
  * @param {Object<string, Array>} casesObj
  */
-function saveCases(casesObj) {
-  fs.writeFileSync(casesFile, JSON.stringify(casesObj, null, 2), 'utf8');
+async function saveCases(casesObj) {
+  await writeJSON(casesFile, casesObj);
 }
 
 /**
@@ -34,8 +27,8 @@ function saveCases(casesObj) {
  * @param {string} guildId
  * @returns {string}
  */
-function generateCaseId(guildId) {
-  const allCases = loadCases();
+async function generateCaseId(guildId) {
+  const allCases = await loadCases();
   const guildCases = allCases[guildId] || [];
   const nextNumber = guildCases.length + 1;
   const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -53,9 +46,9 @@ function generateCaseId(guildId) {
  * @param {Object} meta Métadonnées supplémentaires
  * @returns {Object} Le cas créé
  */
-function createCase(guildId, userId, type, reason, moderatorId, expiresAt = null, meta = {}) {
-  const allCases = loadCases();
-  const id = generateCaseId(guildId);
+async function createCase(guildId, userId, type, reason, moderatorId, expiresAt = null, meta = {}) {
+  const allCases = await loadCases();
+  const id = await generateCaseId(guildId);
   const newCase = {
     id,
     userId,
@@ -68,7 +61,7 @@ function createCase(guildId, userId, type, reason, moderatorId, expiresAt = null
   };
   if (!allCases[guildId]) allCases[guildId] = [];
   allCases[guildId].push(newCase);
-  saveCases(allCases);
+  await saveCases(allCases);
   return newCase;
 }
 
@@ -78,13 +71,13 @@ function createCase(guildId, userId, type, reason, moderatorId, expiresAt = null
  * @param {string} caseId ID du cas à supprimer
  * @returns {Object|null} Le cas supprimé ou null s'il n'existait pas
  */
-function removeCase(guildId, caseId) {
-  const allCases = loadCases();
+async function removeCase(guildId, caseId) {
+  const allCases = await loadCases();
   const guildCases = allCases[guildId] || [];
   const index = guildCases.findIndex(c => c.id === caseId);
   if (index === -1) return null;
   const [removed] = guildCases.splice(index, 1);
-  saveCases(allCases);
+  await saveCases(allCases);
   return removed;
 }
 
@@ -94,8 +87,8 @@ function removeCase(guildId, caseId) {
  * @param {string} userId
  * @returns {Array}
  */
-function getCasesForUser(guildId, userId) {
-  const allCases = loadCases();
+async function getCasesForUser(guildId, userId) {
+  const allCases = await loadCases();
   return (allCases[guildId] || []).filter(c => c.userId === userId);
 }
 
@@ -104,8 +97,8 @@ function getCasesForUser(guildId, userId) {
  * @param {string} guildId
  * @returns {Array}
  */
-function getAllCases(guildId) {
-  const allCases = loadCases();
+async function getAllCases(guildId) {
+  const allCases = await loadCases();
   return allCases[guildId] || [];
 }
 

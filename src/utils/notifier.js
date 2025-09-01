@@ -10,7 +10,7 @@
  * laisser WEBHOOK_URL vide ou fixer SKIP_WEBHOOK=true.
  */
 
-const DEFAULT_WEBHOOK = 'https://discord.com/api/webhooks/1406665913117179996/pNpCjY8cGIEqDfvetZ0QfGQX1kKo78ZiUQEhANOboMrU3GpC75Z-ydANcYAhppsNflxT';
+const DEFAULT_WEBHOOK = ''; // SÉCURITÉ: Pas de webhook par défaut
 
 /**
  * Envoie un message brut au webhook. Si SKIP_WEBHOOK est définie à
@@ -24,6 +24,13 @@ export async function sendWebhook(content) {
   if (skip) return;
   const url = process.env.WEBHOOK_URL || DEFAULT_WEBHOOK;
   if (!url) return;
+  
+  // Validation basique de l'URL webhook
+  if (!url.startsWith('https://discord.com/api/webhooks/')) {
+    console.warn('[notifier] URL webhook invalide');
+    return;
+  }
+  
   const payload =
     typeof content === 'string'
       ? { content }
