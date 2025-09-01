@@ -3,12 +3,51 @@ import { loadConfig } from '../features/modlogs.js';
 // Import du nouvel analyseur de liens (heuristiques) et du LLM pour les mentions
 import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
 import { tryContextualReply } from '../features/contextualReplies.js';
+import { addXp } from '../features/levelSystem.js';
+import { EmbedBuilder } from 'discord.js';
+import { Colors } from '../utils/theme.js';
 
 export default {
   name: 'messageCreate',
   async execute(message, client) {
     // Ne pas traiter les messages du bot
     if (message.author.bot) return;
+
+    // 🎯 Système de niveaux (gain d'XP)
+    if (message.guild && message.content.length > 0) {
+      try {
+        const levelResult = await addXp(message.guild.id, message.author.id, message);
+        
+        // 🎉 Célébration de montée de niveau
+        if (levelResult?.levelUp) {
+          const embed = new EmbedBuilder()
+            .setTitle('🎉 NIVEAU SUPÉRIEUR !')
+            .setDescription(`**${message.author}** vient d'atteindre le **niveau ${levelResult.newLevel}** !`)
+            .setColor(Colors.success)
+            .addFields(
+              { name: '⭐ XP Total', value: `${levelResult.totalXp.toLocaleString()}`, inline: true },
+              { name: '🎯 Prochain niveau', value: `${levelResult.xpForNext.toLocaleString()} XP`, inline: true }
+            )
+            .setThumbnail(message.author.displayAvatarURL({ dynamic: true }));
+          
+          // Ajouter le palier spécial si disponible
+          if (levelResult.milestone) {
+            embed.addFields({
+              name: '🏅 Nouveau Titre Débloqué !',
+              value: `**${levelResult.milestone.title}**\n*${levelResult.milestone.message}*`,
+              inline: false
+            });
+          }
+          
+          embed.setFooter({ text: '🎯 Continue comme ça !' });
+          
+          // Envoyer la célébration dans le même salon
+          await message.channel.send({ embeds: [embed] });
+        }
+      } catch (error) {
+        console.error('[LevelSystem] Erreur lors du gain d\'XP:', error);
+      }
+    }
 
     // 1) Analyse heuristique des liens (LinkGuardianLite)
     try {
