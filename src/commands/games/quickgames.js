@@ -162,20 +162,25 @@ async function executeFlip(interaction) {
 
 // 🎯 Roulette russe simplifiée
 async function executeRoulette(interaction) {
+  const participants = new Set();
+  const bullets = Math.floor(Math.random() * 3) + 1; // 1 à 3 balles
+  const chambers = 6;
+  
   await interaction.reply({ 
-    content: `🎯 **Roulette Russe !**\n*Grook charge le barillet... Qui sera éliminé ?*\n\n⏰ **10 secondes** pour écrire "BANG" et participer !`, 
+    content: `🎯 **ROULETTE RUSSE PREMIUM !**\n\n🔫 *Grook charge ${bullets} balle${bullets > 1 ? 's' : ''} dans le barillet...*\n💀 *${chambers} chambres, ${bullets} mort${bullets > 1 ? 's' : ''} possible${bullets > 1 ? 's' : ''}*\n\n⏰ **15 secondes** pour écrire "BANG" et jouer avec la mort !`, 
     allowedMentions: { users: [] } 
   });
   
-  const participants = new Set();
   const collector = interaction.channel.createMessageCollector({ 
     filter: m => !m.author.bot && m.content.toLowerCase().includes('bang'), 
-    time: 10000 
+    time: 15000 
   });
   
   collector.on('collect', msg => {
     participants.add(msg.author.id);
-    msg.react('🎯').catch(() => {});
+    const reactions = ['🎯', '💀', '🔫', '⚡', '💥'];
+    const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+    msg.react(reaction).catch(() => {});
   });
   
   collector.on('end', async () => {
@@ -183,18 +188,70 @@ async function executeRoulette(interaction) {
     
     if (players.length < 2) {
       return interaction.followUp({ 
-        content: `😅 **Pas assez de participants !** Il faut au moins 2 joueurs pour la roulette.`, 
+        content: `😅 **Trop peu de courageux !**\n*Il faut au moins 2 joueurs pour défier la mort...*`, 
         allowedMentions: { users: [] } 
       });
     }
     
-    // Élimination aléatoire
-    const eliminated = players[Math.floor(Math.random() * players.length)];
-    const survivors = players.filter(id => id !== eliminated);
+    // Simulation dramatique
+    await interaction.followUp({
+      content: `🎭 **${players.length} joueurs** se préparent...\n*Le barillet tourne... Click... Click...*`,
+      allowedMentions: { users: [] }
+    });
     
-    // Incrémenter les victoires des survivants
-    for (const id of survivors) {
-      incrementWin(interaction.guild.id, id, 'roulette');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Déterminer les victimes selon le nombre de balles
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    const victims = shuffled.slice(0, Math.min(bullets, players.length - 1));
+    const survivors = players.filter(id => !victims.includes(id));
+    
+    // Messages dramatiques selon le nombre de victimes
+    let resultMessage;
+    if (victims.length === 1) {
+      resultMessage = `💥 **BANG !**\n\n💀 <@${victims[0]}> a tiré la balle fatale !\n🏆 **Survivants :** ${survivors.map(id => `<@${id}>`).join(', ')}\n\n*La chance sourit aux audacieux... sauf à un !*`;
+    } else if (victims.length === 2) {
+      resultMessage = `💥💥 **DOUBLE BANG !**\n\n💀 <@${victims[0]}> et <@${victims[1]}> ont tiré les balles fatales !\n🏆 **Survivants :** ${survivors.map(id => `<@${id}>`).join(', ')}\n\n*Deux âmes perdues dans cette roulette infernale...*`;
+    } else {
+      resultMessage = `💥💥💥 **MASSACRE !**\n\n💀 **Victimes :** ${victims.map(id => `<@${id}>`).join(', ')}\n🏆 **Survivants :** ${survivors.map(id => `<@${id}>`).join(', ')}\n\n*Un bain de sang ! Grook n'avait pas prévu ça...*`;
+    }
+    
+    // Easter egg ultra rare : personne ne meurt
+    if (Math.random() < 0.001) { // 0.1% de chance
+      resultMessage = `✨ **MIRACLE !**\n\n🙏 *Le barillet était vide ! Grook vous a tous épargnés...*\n🏆 **Tout le monde survit :** ${players.map(id => `<@${id}>`).join(', ')}\n\n*Parfois, la chance sourit à tous les fous...*`;
+      // Tout le monde gagne dans ce cas
+      for (const id of players) {
+        incrementWin(interaction.guild.id, id, 'roulette');
+      }
+    } else {
+      // Incrémenter les victoires des survivants
+      for (const id of survivors) {
+        incrementWin(interaction.guild.id, id, 'roulette');
+      }
+    }
+    
+    // Statistiques de la partie
+    const stats = `\n\n📊 **Stats :** ${players.length} joueurs • ${bullets} balle${bullets > 1 ? 's' : ''} • ${victims.length || 0} victime${victims.length > 1 ? 's' : ''}`;
+    
+    await interaction.followUp({ 
+      content: resultMessage + stats,
+      allowedMentions: { users: players } 
+    });
+    
+    // Message final dramatique
+    setTimeout(() => {
+      const endings = [
+        '*Le silence retombe sur le salon...*',
+        '*Grook range son arme avec un sourire mystérieux...*',
+        '*Une nouvelle légende vient de naître...*',
+        '*Les survivants se souviendront de ce jour...*'
+      ];
+      const ending = endings[Math.floor(Math.random() * endings.length)];
+      interaction.followUp({ content: ending, allowedMentions: { users: [] } }).catch(() => {});
+    }, 3000);
+  });
+}
+
     }
     
     await interaction.followUp({ 
