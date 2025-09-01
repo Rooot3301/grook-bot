@@ -2,8 +2,8 @@ import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'disc
 
 // Configuration par défaut des easter eggs
 const defaultConfig = {
-  rickrollChance: 0.0001,    // 0,01% des messages (ultra rare)
-  lazyChance: 0.001          // 0,1% des commandes (ultra rare)
+  rickrollChance: 0.0000001, // 0,00001% des messages (1 sur 10 millions)
+  lazyChance: 0.0000001      // 0,00001% des commandes (1 sur 10 millions)
 };
 
 /**

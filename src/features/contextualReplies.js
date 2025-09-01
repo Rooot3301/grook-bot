@@ -8,8 +8,8 @@
  * magiques et mémorables sur le serveur.
  */
 
-// 🎲 Probabilité ultra rare : 0.0001% (1 chance sur 1 million)
-const CONTEXTUAL_CHANCE = 0.000001;
+// 🎲 Probabilité LÉGENDAIRE : 0.00001% (1 chance sur 10 millions)
+const CONTEXTUAL_CHANCE = 0.0000001;
 
 // 🎯 Patterns contextuels avec leurs réponses
 const CONTEXTUAL_PATTERNS = [

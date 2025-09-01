@@ -99,8 +99,8 @@ function generateContextualStatuses(version) {
     baseStatuses.push({ type: ActivityType.Playing, text: `${botStats.uptime}h d'uptime` });
   }
 
-  // 🎲 Statuts humoristiques rares (10% de chance)
-  if (Math.random() < 0.1) {
+  // 🎲 Statuts humoristiques LÉGENDAIRES (0.1% de chance)
+  if (Math.random() < 0.001) {
     const funnyStatuses = [
       { type: ActivityType.Playing, text: 'à cache-cache avec les bugs' },
       { type: ActivityType.Playing, text: 'GTA 6' },
