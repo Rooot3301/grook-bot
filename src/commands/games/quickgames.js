@@ -251,12 +251,3 @@ async function executeRoulette(interaction) {
     }, 3000);
   });
 }
-
-    }
-    
-    await interaction.followUp({ 
-      content: `💥 **BANG !**\n\n🔫 <@${eliminated}> a été éliminé !\n🏆 **Survivants :** ${survivors.map(id => `<@${id}>`).join(', ')}\n\n*La chance sourit aux audacieux... sauf à un !*`, 
-      allowedMentions: { users: [...survivors, eliminated] } 
-    });
-  });
-}
