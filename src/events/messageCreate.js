@@ -1,4 +1,4 @@
-import { tryRickroll, tryProphecy } from '../features/easterEggs.js';
+import { tryRickroll } from '../features/easterEggs.js';
 import { loadConfig } from '../features/modlogs.js';
 // Import du nouvel analyseur de liens (heuristiques) et du LLM pour les mentions
 import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
