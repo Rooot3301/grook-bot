@@ -1,20 +1,20 @@
 # 🤖 Grook Bot
 
 Bot Discord multifonctions inspiré par l'univers de **Grook**.  
-Il combine des outils de **modération**, des **mini‑jeux** interactifs, des commandes "fun" et des **easter eggs** pour rendre votre serveur vivant et sécurisé.
+Il combine des outils de **modération**, des **mini‑jeux** interactifs, des commandes "fun" et des **easter eggs ultra rares** pour rendre votre serveur vivant et sécurisé.
 
-## 🆕 Nouveautés de la version 2.0.0
+## 🆕 Nouveautés de la version 3.0.0
 
-La version 2 de Grook introduit plusieurs améliorations majeures axées sur la stabilité et l’ergonomie :
+La version 3 de Grook introduit une révolution complète du gameplay et de l'architecture :
 
-- **Direction artistique harmonisée** : toutes les commandes utilisent désormais une palette de couleurs cohérente via un helper d’embed (`utils/embed.js`). Les embeds s’adaptent automatiquement (succès, erreur, info, avertissement) pour une lecture claire.
-- **Notifications via webhook** : un webhook Discord configurable (`WEBHOOK_URL`) prévient lorsqu’une mise à jour est déployée, que le bot démarre ou qu’une erreur critique se produit. Pour désactiver ces notifications en développement, définissez `SKIP_WEBHOOK=true`.
-- **Déploiement des slash commands amélioré** : le script `npm run deploy` élimine les doublons et envoie un rapport de succès/échec via le webhook. Un indicateur `WIPE_BEFORE_DEPLOY=true` supprime les commandes avant un nouveau déploiement.
-- **Gestion de configuration asynchrone** : la commande `/config` s’appuie sur un service (`services/configService.js`) pour lire/écrire les paramètres de manière atomique et non bloquante. Les réponses utilisent les nouveaux embeds.
-- **Log d’audit et ratelimit interne** : les actions sensibles sont journalisées dans `logs/audit.log` et un système de jetons limite le spam de commandes par utilisateur.
-- **Bump de version** : le projet passe en `2.0.0` (voir `package.json`). Le numéro de version est exposé via `/version` et repris dans les notifications de démarrage.
+- **🕵️ GrookSpy révolutionné** : Jeu d'Undercover complet avec 80+ paires de mots équilibrées, interface premium et vraies règles du jeu
+- **🎮 Mini-jeux consolidés** : Tous regroupés dans `/grookgames` pour une meilleure organisation
+- **🥚 Easter eggs ultra rares** : Fréquences drastiquement réduites (Rickroll 0.01%, Lazy 0.1%)
+- **🎨 Interface premium** : Embeds colorés cohérents avec feedback instantané
+- **🧹 Architecture nettoyée** : Code optimisé, fichiers redondants supprimés
+- **📊 Statistiques avancées** : Suivi détaillé des performances de jeu
 
-Ces nouveautés visent à rendre Grook prêt pour un déploiement en production stable et élégant. Consultez la suite du README pour la liste complète des commandes et des fonctionnalités.
+Cette version majeure transforme Grook en une véritable pépite de bot Discord, prêt pour un usage intensif en production.
 
 ## 🔧 Installation et lancement
 
@@ -86,22 +86,19 @@ Les cas et avertissements sont stockés dans des fichiers JSON (voir `src/data/`
 
 Grook comporte plusieurs surprises aléatoires :
 
-1. **Rickroll** : de temps en temps, un message « GG, voilà ta récompense » apparaît avec un bouton menant vers un célèbre lien YouTube. Parfois Grook se ravise et répond simplement « Non, pas aujourd’hui 😏 ».
-2. **Flemme** : Grook peut refuser d’exécuter une commande (rarement) et répondre « Laisse‑moi dormir zebi », ou « Demande à Google frère », ou « J’ai la flemme, reviens plus tard ».  
-3. **Prophéties** : Grook poste parfois une prophétie absurde dans le salon de discussion.
+1. **🎲 Rickroll Ultra Rare** : Avec seulement 0.01% de chance, un message « GG, voilà ta récompense » peut apparaître avec un bouton menant vers un célèbre lien YouTube. Parfois Grook se ravise et répond simplement « Non, pas aujourd'hui 😏 ».
+2. **😴 Lazy Responses** : Très rarement (0.1% des commandes), Grook peut refuser d'exécuter une commande avec des réponses créatives comme « Erreur 418 : Je suis une théière » ou « Mode nuit activé. Réessaie demain ! ».
 
-Ces comportements sont réglables via la configuration et restent rares pour éviter le spam.
+Ces easter eggs sont maintenant **légendaires** - si rares que les découvrir devient un véritable événement sur votre serveur !
 
 ## 🎉 Commandes fun
 
 Pour égayer le serveur, quelques commandes simples :
 
-- `/grookflip` : lance une pièce (Grook peut tricher).  
-- `/grookrate <truc>` : note quelque chose de 0 à 10 de façon sarcastique.  
-- `/grookfortune` : prédit l’avenir d’un membre (ou du serveur) façon cookie chinois.  
-- `/grookquote <lien_ou_id>` : cite un message de façon stylée.  
-- `/grookstats` : affiche les statistiques des mini‑jeux (victoires par membre).  
-  
+- `/grookrate <truc>` : note quelque chose de 0 à 10 de façon sarcastique.  
+- `/grookfortune` : prédit l'avenir d'un membre façon cookie chinois.  
+- `/grookquote <lien_ou_id>` : cite un message de façon stylée.  
+- `/grookstats` : affiche les statistiques des mini‑jeux (victoires par membre).
 
 ## 🛠️ Commandes utilitaires
 
@@ -116,22 +113,25 @@ Pour égayer le serveur, quelques commandes simples :
 
 ## 🎮 Jeux interactifs
 
-### GrookRoulette
-Commandez `/grookroulette` pour lancer une roulette russe virtuelle. Les joueurs cliquent sur « Participer » pour rejoindre. Grook élimine un participant à chaque tour jusqu’à la victoire finale.
+### 🕵️ GrookSpy - Le Jeu d'Undercover Ultime
+Commandez `/grookspy` pour lancer une partie d'Undercover révolutionnaire :
 
-### GrookTyper
-Avec `/grooktyper`, Grook envoie une phrase aléatoire et le premier joueur à la retaper correctement l’emporte.
+- **🎯 80+ paires de mots** soigneusement équilibrées par difficulté
+- **🎭 Vraies règles** : Tous les joueurs ont le même mot sauf UN (l'undercover)
+- **🎨 Interface premium** avec embeds colorés et conseils stratégiques
+- **⏰ Gestion du temps** optimisée (30s inscription, 90s indices, 60s vote)
+- **📊 Statistiques détaillées** de fin de partie avec analyse des votes
+- **🧠 Validation intelligente** des indices pour éviter la triche
 
-### GrookGuess
-La commande `/grookguess` lance un jeu de devinettes : Grook pense à un nombre entre 1 et 100 et répond « Plus haut ! » ou « Plus bas ! » jusqu’à trouver le bon nombre. Grook peut parfois mentir pour pimenter le jeu.
+### 🎮 Mini-Jeux Rapides
+Utilisez `/grookgames` pour accéder à une collection de jeux instantanés :
 
-### GrookSpy
-Jeu d’Undercover. En lançant `/grookspy`, les joueurs rejoignent via un bouton. Grook donne un mot identique à tous sauf à l’Undercover, qui reçoit un mot approchant. Chacun donne ensuite un indice ; les joueurs votent pour démasquer l’espion. Si l’Undercover survit, il gagne.
+- **🔢 Guess** : Devinez le nombre (Grook peut mentir !)
+- **⌨️ Typer** : Course de frappe avec phrases créatives
+- **🪙 Flip** : Pile ou face avec effets spéciaux rares
+- **🎯 Roulette** : Roulette russe virtuelle
 
-### Liar
-Avec `/liar`, l’hôte saisit trois affirmations (deux vraies, une fausse). Les autres votent pour deviner laquelle est le mensonge. Grook révèle la réponse et roast les perdants.
-
-> **Remarque :** certaines implémentations de jeux complexes nécessitent des interactions avancées (boutons, modals). Ce dépôt fournit un squelette de base ; vous pouvez enrichir les jeux selon vos besoins.
+Tous les jeux incluent un système de statistiques et de victoires pour encourager la compétition !
 
 ## 🔍 Analyse des liens (LinkGuardianLite)
 
@@ -174,7 +174,7 @@ N’hésitez pas à proposer des améliorations ou à compléter les jeux exista
 
 Ce projet est publié sous licence MIT. Vous pouvez l’utiliser et le modifier librement en respectant cette licence.
 
-## 🗂️ Versionning
+## 🗂️ Versioning
 
 Le numéro de version du bot est stocké dans le fichier `package.json` (champ `version`).  
 Pour toute modification majeure ou mineure du code, pensez à incrémenter cette valeur.  
@@ -183,6 +183,5 @@ Le projet propose deux outils pour gérer les versions :
 
 1. **Commande slash `/version`** — elle répond avec la version courante du bot afin que les utilisateurs puissent vérifier rapidement s’ils disposent de la dernière version déployée.
 
-2. **Script `npm run release`** — ce script utilise la commande `npm version patch` pour incrémenter automatiquement le numéro de version (ex. 1.0.0 → 1.0.1) et ajoute un message de commit standard.  
-   Lancez simplement : `npm run release` pour préparer une nouvelle release.  
+2. **Scripts de release** — utilisez `npm run release:patch`, `npm run release:minor` ou `npm run release:major` pour incrémenter automatiquement le numéro de version avec un message de commit approprié.  
    *Remarque :* pour que le commit et le tag soient créés correctement, votre dépôt doit être initialisé avec Git et la branche doit être propre.
