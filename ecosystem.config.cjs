@@ -22,12 +22,13 @@ module.exports = {
       restart_delay: 5000,
       min_uptime: '10s',
       max_restarts: 10,
-      max_memory_restart: '300M',
+      max_memory_restart: '512M',
 
       // Variables d’environnement
       env: {
         NODE_ENV: 'production',
         TZ: 'Europe/Paris',
+        LOG_LEVEL: 'info',
       },
 
       // Fichiers de logs
@@ -36,6 +37,11 @@ module.exports = {
       merge_logs: true,
       time: true,
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      
+      // Rotation des logs
+      log_file: 'logs/combined.log',
+      max_size: '10M',
+      retain: 5,
     },
   ],
 };
