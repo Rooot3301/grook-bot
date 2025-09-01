@@ -103,13 +103,22 @@ function generateContextualStatuses(version) {
   if (Math.random() < 0.1) {
     const funnyStatuses = [
       { type: ActivityType.Playing, text: 'à cache-cache avec les bugs' },
+      { type: ActivityType.Playing, text: 'GTA 6 (en avant-première)' },
+      { type: ActivityType.Playing, text: 'Half-Life 3' },
+      { type: ActivityType.Playing, text: 'Cyberpunk 2077 sans bugs' },
+      { type: ActivityType.Playing, text: 'Minecraft 2' },
+      { type: ActivityType.Playing, text: 'Among Us 2' },
+      { type: ActivityType.Playing, text: 'Fortnite Chapter 99' },
+      { type: ActivityType.Playing, text: 'Call of Duty: Discord Warfare' },
+      { type: ActivityType.Playing, text: 'The Elder Scrolls VI' },
+      { type: ActivityType.Playing, text: 'Portal 3' },
+      { type: ActivityType.Playing, text: 'Team Fortress 3' },
       { type: ActivityType.Listening, text: 'les plaintes des développeurs' },
       { type: ActivityType.Watching, text: 'Netflix (en secret)' },
       { type: ActivityType.Competing, text: 'au concours de dad jokes' },
       { type: ActivityType.Playing, text: 'le psychologue du serveur' },
       { type: ActivityType.Listening, text: 'vos secrets les plus sombres' },
-      { type: ActivityType.Watching, text: 'l\'évolution de l\'humanité' },
-      { type: ActivityType.Playing, text: 'à être mystérieux' }
+      { type: ActivityType.Watching, text: 'l\'évolution de l\'humanité' }
     ];
     baseStatuses.push(...funnyStatuses);
   }
