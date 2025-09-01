@@ -38,8 +38,7 @@ export default {
     // Récupérer la configuration pour d'éventuels easter eggs
     const cfg = loadConfig();
     const guildCfg = cfg.guilds?.[message.guild?.id] || {};
-    // Easter eggs : Rickroll et prophéties
+    // Easter eggs : Rickroll uniquement
     await tryRickroll(message, {});
-    await tryProphecy(message, {});
   }
 };

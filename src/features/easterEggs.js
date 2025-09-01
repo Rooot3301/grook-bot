@@ -3,13 +3,8 @@ import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'disc
 // Configuration par défaut des easter eggs
 const defaultConfig = {
   rickrollChance: 0.0001,    // 0,01% des messages (ultra rare)
-  lazyChance: 0.001,         // 0,1% des commandes (ultra rare)
-  prophecyChance: 0.00005,   // 0,005% des messages (légendaire)
-  prophecyCooldownMs: 1000 * 60 * 60 * 24 // 24 heures entre deux prophéties
+  lazyChance: 0.001          // 0,1% des commandes (ultra rare)
 };
-
-// Suivi du dernier envoi de prophétie par serveur
-const lastProphecyTimes = new Map();
 
 /**
  * Vérifie et envoie un easter egg Rickroll aléatoire sur un message.
@@ -90,55 +85,5 @@ export async function tryLazyResponse(interaction, cfg = {}) {
   await interaction.reply({ content: msg, ephemeral: true });
   
   console.log(`😴 [EasterEgg] Lazy response pour /${interaction.commandName} par ${interaction.user.tag}`);
-  return true;
-}
-
-/**
- * Envoie une prophétie mystérieuse occasionnelle dans un salon.
- * @param {import('discord.js').Message} message
- * @param {Object} cfg
- */
-export async function tryProphecy(message, cfg = {}) {
-  const chance = cfg.prophecyChance ?? defaultConfig.prophecyChance;
-  const cooldown = cfg.prophecyCooldownMs ?? defaultConfig.prophecyCooldownMs;
-  const guildId = message.guild?.id;
-  if (!guildId) return false;
-  
-  const lastTime = lastProphecyTimes.get(guildId) || 0;
-  if (Date.now() - lastTime < cooldown) return false;
-  if (Math.random() >= chance) return false;
-  
-  // 🔮 Prophéties mystérieuses et absurdes
-  const props = [
-    '🌑 Quand la lune sera pleine, un modérateur perdra ses pouvoirs...',
-    '⚡ Un membre sera un jour modéré par son propre bot...',
-    '📜 Les anciens parlent d\'un serveur où les memes sont éternels...',
-    '👁️ Celui qui prononcera mon nom trois fois déclenchera le chaos...',
-    '🔮 Dans 7 jours, quelqu\'un découvrira un easter egg légendaire...',
-    '🌟 Les étoiles murmurent qu\'un rickroll cosmique approche...',
-    '🎭 Un undercover parfait se cache parmi vous depuis le début...',
-    '⚔️ La grande guerre des emojis commencera par un simple 🗿...',
-    '🎪 Le cirque numérique ouvrira ses portes quand 42 sera atteint...',
-    '🌊 Une vague de nostalgie submergera ce serveur bientôt...',
-    '🎯 Le dernier message de ce salon révélera un secret ancien...',
-    '🔥 Phoenix renaîtra de ses cendres numériques sous peu...'
-  ];
-  
-  const content = props[Math.floor(Math.random() * props.length)];
-  
-  const embed = new EmbedBuilder()
-    .setTitle('🔮 Prophétie Mystique')
-    .setDescription(content)
-    .setColor(0x6A0DAD)
-    .setFooter({ 
-      text: 'Les anciens oracles ne mentent jamais... ou presque',
-      iconURL: message.client.user?.displayAvatarURL()
-    })
-    .setTimestamp();
-    
-  await message.channel.send({ embeds: [embed] });
-  lastProphecyTimes.set(guildId, Date.now());
-  
-  console.log(`🔮 [EasterEgg] Prophétie envoyée dans ${message.guild.name} par ${message.author.tag}`);
   return true;
 }
