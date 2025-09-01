@@ -14,7 +14,7 @@ fi
 
 # 2. Backup des données actuelles
 echo "💾 Sauvegarde des données..."
-npm run backup
+node scripts/backup.js
 
 # 3. Arrêter l'ancienne version (ID 2)
 echo "🛑 Arrêt de l'ancienne version..."
