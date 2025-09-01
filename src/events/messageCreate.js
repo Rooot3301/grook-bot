@@ -2,7 +2,6 @@ import { tryRickroll } from '../features/easterEggs.js';
 import { loadConfig } from '../features/modlogs.js';
 // Import du nouvel analyseur de liens (heuristiques) et du LLM pour les mentions
 import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
-import { handleMentionLLM } from '../features/llmChat.js';
 
 export default {
   name: 'messageCreate',
@@ -21,14 +20,10 @@ export default {
     try {
       if (message.mentions?.users?.has(client.user?.id)) {
         console.log(`[mention] ${message.author.tag} mentionné: ${message.content}`);
-        // Tente une réponse LLM (si activé) — renvoie true si le message est géré
-        const handled = await handleMentionLLM(message, client);
-        if (!handled) {
-          // Sinon, réponse aléatoire « humaine » en fallback
-          const { getRandomMentionReply } = await import('../features/humanReplies.js');
-          const reply = getRandomMentionReply(message.author);
-          await message.reply({ content: reply });
-        }
+        // Réponse aléatoire « humaine » directement
+        const { getRandomMentionReply } = await import('../features/humanReplies.js');
+        const reply = getRandomMentionReply(message.author);
+        await message.reply({ content: reply });
         // Après avoir répondu à la mention, on laisse les easter eggs se déclencher (pas de return)
       }
     } catch (error) {
