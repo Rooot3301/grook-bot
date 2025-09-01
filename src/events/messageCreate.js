@@ -20,29 +20,51 @@ export default {
         
         // 🎉 Célébration de montée de niveau
         if (levelResult?.levelUp) {
-          const embed = new EmbedBuilder()
-            .setTitle('🎉 NIVEAU SUPÉRIEUR !')
-            .setDescription(`**${message.author}** vient d'atteindre le **niveau ${levelResult.newLevel}** !`)
-            .setColor(Colors.success)
-            .addFields(
-              { name: '⭐ XP Total', value: `${levelResult.totalXp.toLocaleString()}`, inline: true },
-              { name: '🎯 Prochain niveau', value: `${levelResult.xpForNext.toLocaleString()} XP`, inline: true }
-            )
-            .setThumbnail(message.author.displayAvatarURL({ dynamic: true }));
-          
-          // Ajouter le palier spécial si disponible
-          if (levelResult.milestone) {
-            embed.addFields({
-              name: '🏅 Nouveau Titre Débloqué !',
-              value: `**${levelResult.milestone.title}**\n*${levelResult.milestone.message}*`,
-              inline: false
+          try {
+            const embed = new EmbedBuilder()
+              .setTitle('🎉 NIVEAU SUPÉRIEUR !')
+              .setDescription(`Tu viens d'atteindre le **niveau ${levelResult.newLevel}** dans **${message.guild.name}** !`)
+              .setColor(Colors.success)
+              .addFields(
+                { name: '⭐ XP Total', value: `${levelResult.totalXp.toLocaleString()}`, inline: true },
+                { name: '🎯 Prochain niveau', value: `${levelResult.xpForNext.toLocaleString()} XP`, inline: true }
+              )
+              .setThumbnail(message.author.displayAvatarURL({ dynamic: true }));
+            
+            // Ajouter le palier spécial si disponible
+            if (levelResult.milestone) {
+              embed.addFields({
+                name: '🏅 Nouveau Titre Débloqué !',
+                value: `**${levelResult.milestone.title}**\n*${levelResult.milestone.message}*`,
+                inline: false
+              });
+            }
+            
+            embed.setFooter({ text: '🎯 Continue comme ça !' });
+            
+            // Envoyer la notification en MP
+            await message.author.send({ embeds: [embed] });
+            
+            // Message discret dans le salon (optionnel)
+            await message.react('🎉').catch(() => {});
+            
+          } catch (dmError) {
+            // Si l'envoi en MP échoue, envoyer un message discret dans le salon
+            console.warn(`[LevelSystem] Impossible d'envoyer MP à ${message.author.tag}:`, dmError.message);
+            
+            const fallbackMessage = `🎉 **${message.author}** niveau **${levelResult.newLevel}** !${levelResult.milestone ? ` • ${levelResult.milestone.title}` : ''}`;
+            const fallbackMsg = await message.channel.send({ 
+              content: fallbackMessage,
+              allowedMentions: { users: [message.author.id] }
             });
+            
+            // Supprimer le message de fallback après 10 secondes
+            setTimeout(() => {
+              if (fallbackMsg && fallbackMsg.deletable) {
+                fallbackMsg.delete().catch(() => {});
+              }
+            }, 10000);
           }
-          
-          embed.setFooter({ text: '🎯 Continue comme ça !' });
-          
-          // Envoyer la célébration dans le même salon
-          await message.channel.send({ embeds: [embed] });
         }
       } catch (error) {
         console.error('[LevelSystem] Erreur lors du gain d\'XP:', error);
