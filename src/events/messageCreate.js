@@ -2,6 +2,7 @@ import { tryRickroll } from '../features/easterEggs.js';
 import { loadConfig } from '../features/modlogs.js';
 // Import du nouvel analyseur de liens (heuristiques) et du LLM pour les mentions
 import { analyzeLinksInMessage } from '../features/linkGuardianLite.js';
+import { tryContextualReply } from '../features/contextualReplies.js';
 
 export default {
   name: 'messageCreate',
@@ -16,7 +17,15 @@ export default {
       console.error('[linkGuardianLite] erreur :', err);
     }
 
-    // 2) Répondre de manière conversationnelle lorsque le bot est mentionné
+    // 2) Réponses contextuelles ultra rares (1 sur 1 million)
+    try {
+      const replied = await tryContextualReply(message);
+      if (replied) return; // Si réponse contextuelle, on s'arrête là
+    } catch (err) {
+      console.error('[contextualReplies] erreur :', err);
+    }
+
+    // 3) Répondre de manière conversationnelle lorsque le bot est mentionné
     try {
       if (message.mentions?.users?.has(client.user?.id)) {
         console.log(`[mention] ${message.author.tag} mentionné: ${message.content}`);
