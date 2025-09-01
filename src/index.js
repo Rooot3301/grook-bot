@@ -7,6 +7,7 @@ import { loadEvents } from './loader/events.js';
 import { startRichPresenceRotation } from './features/richPresence.js';
 import { notifyEmbed } from './utils/notifier.js';
 import { Colors } from './utils/theme.js';
+import { startHealthServer } from './observability/health.js';
 
 // Charge les variables d'environnement depuis .env
 loadEnv();
@@ -57,6 +58,10 @@ client.login(process.env.DISCORD_TOKEN);
 client.once('ready', () => {
   console.log(`🤖 ${client.user.tag} est connecté et prêt.`);
   console.log(`[ready] ID: ${client.user.id}`);
+  
+  // Démarrer le serveur de health check
+  startHealthServer({ client });
+  
   startRichPresenceRotation(client);
   // Notification de démarrage via webhook
   notifyEmbed({

@@ -9,7 +9,6 @@ import path from 'path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 console.log('🔗 Lancement des tests d\'intégration...\n');
-)
 
 // Test chargement des commandes
 async function testCommandLoading() {
