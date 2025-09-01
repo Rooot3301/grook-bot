@@ -19,9 +19,9 @@ module.exports = {
       exec_mode: 'fork', // ou 'cluster' pour plusieurs instances
       watch: false, // activer en développement pour recharger au changement
       autorestart: true,
-      restart_delay: 5000,
+      restart_delay: 10000,
       min_uptime: '10s',
-      max_restarts: 10,
+      max_restarts: 5,
       max_memory_restart: '512M',
 
       // Variables d’environnement
@@ -29,6 +29,7 @@ module.exports = {
         NODE_ENV: 'production',
         TZ: 'Europe/Paris',
         LOG_LEVEL: 'info',
+        UV_THREADPOOL_SIZE: 4,
       },
 
       // Fichiers de logs
